@@ -299,7 +299,8 @@ void dumpTcpc() {
 
 void dumpPdEngine() {
     const char* pdEngine [][2] {
-            {"PD Engine logbuffer", "/dev/logbuffer_usbpd"},
+            {"TCPC logbuffer", "/dev/logbuffer_usbpd"},
+            {"pogo_transport logbuffer", "/dev/logbuffer_pogo_transport"},
             {"PPS-google_cpm logbuffer", "/dev/logbuffer_cpm"},
     };
     const char* ppsDcMsg = "PPS-dc logbuffer";
@@ -326,6 +327,7 @@ void dumpBatteryHealth() {
             {"TTF stats", "/sys/class/power_supply/battery/ttf_stats"},
             {"aacr_state", "/sys/class/power_supply/battery/aacr_state"},
             {"pairing_state", "/sys/class/power_supply/battery/pairing_state"},
+            {"fwupdate", "/dev/logbuffer_max77779_fwupdate"}
     };
 
     const char* maxqName = "maxq logbuffer";
@@ -475,6 +477,11 @@ void dumpChgUserDebug() {
     const std::string debugfs = "/d/";
     const char *maxFgDir = "/d/maxfg";
     const char *maxFgStrMatch = "maxfg";
+    const char *maxBaseFgDir = "/d/maxfg_base";
+    const char *maxBaseFgStrMatch = "maxfg_base";
+    const char *maxSecFgDir = "/d/maxfg_secondary";
+    const char *maxSecFgStrMatch = "maxfg_secondary";
+    const char *max77779FgDir = "/d/max77779fg";
     const char *maxFg77779StrMatch = "max77779fg";
     const char *chgTblName = "Charging table dump";
     const char *chgTblDir = "/d/google_battery/chg_raw_profile";
@@ -495,6 +502,11 @@ void dumpChgUserDebug() {
             "debug_registers",
     };
 
+    const char *max1720xFgInfo [] {
+            "registers",
+            "nv_registers",
+    };
+
     if (isUserBuild())
         return;
 
@@ -504,9 +516,18 @@ void dumpChgUserDebug() {
         for (auto & directory : maxFgInfo) {
             printValuesOfDirectory(directory, debugfs, maxFgStrMatch);
         }
-    } else {
+    } else if (isValidDir(max77779FgDir)) {
         for (auto & directory : max77779FgInfo) {
             printValuesOfDirectory(directory, debugfs, maxFg77779StrMatch);
+        }
+    } else if (isValidDir(maxBaseFgDir)) {
+        for (auto & directory : max77779FgInfo) {
+            printValuesOfDirectory(directory, debugfs, maxBaseFgStrMatch);
+        }
+        if (isValidDir(maxSecFgDir)) {
+            for (auto & directory : max1720xFgInfo) {
+                printValuesOfDirectory(directory, debugfs, maxSecFgStrMatch);
+            }
         }
     }
 }
@@ -827,6 +848,13 @@ void dumpIrqDurationCounts() {
                     "s2mpg15-odpm/iio:device0/lpf_current",
     };
 
+    const char *lpfCurrentDirsAlt[] = {
+            "/sys/devices/platform/acpm_mfd_bus@15500000/i2c-7/7-001f/s2mpg14-meter/"
+                    "s2mpg14-odpm/iio:device0/lpf_current",
+            "/sys/devices/platform/acpm_mfd_bus@15510000/i2c-8/8-002f/s2mpg15-meter/"
+                    "s2mpg15-odpm/iio:device1/lpf_current",
+    };
+
     bool titlesInitialized = false;
 
     std::vector<std::string> channelNames;
@@ -889,7 +917,9 @@ void dumpIrqDurationCounts() {
     }
 
     for (int i = 0; i < PWRWARN_MAX; i++) {
-        if (!android::base::ReadFileToString(lpfCurrentDirs[i], &content)) {
+        if (!android::base::ReadFileToString(lpfCurrentDirs[i], &content) &&
+            !android::base::ReadFileToString(lpfCurrentDirsAlt[i], &content)) {
+            printf("Cannot find %s\n", lpfCurrentDirs[i]);
             continue;
         }
 
@@ -927,8 +957,27 @@ void dumpIrqDurationCounts() {
             }
             channelNameSuffix = "";
 
+            if (pmicSel >= PWRWARN_MAX) {
+                printf("invalid index: pmicSel >= pwrwarnCode size\n");
+                return;
+            }
+
+            if (i - offset >= pwrwarnCode[pmicSel].size()) {
+                printf("invalid index: i - offset >= pwrwarnCode size\n");
+                return;
+            }
             code = pwrwarnCode[pmicSel][i - offset];
+
+            if (i - offset >= pwrwarnThreshold[pmicSel].size()) {
+                printf("invalid index: i - offset >= pwrwarnThreshold size\n");
+                return;
+            }
             threshold = pwrwarnThreshold[pmicSel][i - offset];
+
+            if (i - offset >= lpfCurrentVals[pmicSel].size()) {
+                printf("invalid index: i - offset >= lpfCurrentVals size\n");
+                return;
+            }
             current = lpfCurrentVals[pmicSel][i - offset];
         }
 

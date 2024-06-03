@@ -425,6 +425,9 @@ on fs
     chown system system /sys/devices/platform/exynos-drm/primary-panel/panel_need_handle_idle_exit
     chown system system /sys/devices/platform/exynos-drm/primary-panel/op_hz
     chown system system /sys/devices/platform/exynos-drm/primary-panel/refresh_ctrl
+    chown system system /sys/devices/platform/exynos-drm/primary-panel/te2_rate_hz
+    chown system system /sys/devices/platform/exynos-drm/primary-panel/te2_option
+    chown system system /sys/devices/platform/exynos-drm/primary-panel/power_state
     chown system system /sys/module/drm/parameters/vblankoffdelay
     chown system system /sys/module/drm/parameters/debug
     chown system system /sys/class/dqe0/atc/ambient_light
@@ -519,6 +522,12 @@ on property:sys.boot_completed=1
 
     # Cancel boot devfreq
     write /sys/devices/platform/17000010.devfreq_mif/devfreq/17000010.devfreq_mif/exynos_data/cancel_boot_freq 1
+
+    # Setup scheduler parameters
+    write /proc/vendor_sched/min_granularity_ns 1000000
+    write /proc/vendor_sched/latency_ns 8000000
+    write /proc/vendor_sched/max_load_balance_interval 4
+    write /proc/vendor_sched/enable_hrtick 1
 
     # Setup final cpu.uclamp
     write /proc/vendor_sched/groups/ta/uclamp_min 1
@@ -649,16 +658,20 @@ on post-fs-data
     symlink /mnt/vendor/persist/ss /data/vendor/ss/persist
     chown root system /data/vendor/ss/persist
     chmod 0770 /data/vendor/ss/persist
-    symlink /dev/block/platform/13200000\.ufs/by-name/trusty_persist /data/vendor/ss/persist/0
-    symlink /dev/block/platform/13200000\.ufs/by-name/trusty_userdata /data/vendor/ss/0
     chown system system /data/vendor/ss/0
     chown system system /data/vendor/ss/persist/0
     chown system system /data/vendor/ss/persist/nsp
 
     restart storageproxyd
 
-service storageproxyd /vendor/bin/storageproxyd -d /dev/trusty-ipc-dev0 \
-        -r /dev/sg1 -p /data/vendor/ss -t ufs
+service storageproxyd /vendor/bin/storageproxyd \
+	-d /dev/trusty-ipc-dev0 \
+	-r /dev/sg1 \
+	-p /data/vendor/ss \
+	-t ufs \
+	-f 0:/dev/block/platform/13200000\.ufs/by-name/trusty_userdata \
+	-f persist/0:/dev/block/platform/13200000\.ufs/by-name/trusty_persist \
+	-m /dev/block/platform/13200000\.ufs/by-name/trusty_userdata
     class early_hal
     user system
     group system
@@ -691,29 +704,6 @@ on post-fs-data
     # Thermal Residency Stats (write 1 to reset)
     chown system system /sys/kernel/metrics/thermal/tr_by_group/tmu/stats_reset
     chown system system /sys/kernel/metrics/thermal/tr_by_group/spmic/stats_reset
-
-on property:vendor.all.modules.ready=1
-    # BCL
-    write /sys/devices/platform/cpupm/cpupm/cpd_cl1 0 #Disable power down
-    write /sys/devices/platform/cpupm/cpupm/cpd_cl2 0 #Disable power down
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/tpu_light_clk_ratio 0xfff041c1 #OCP
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/cpu1_heavy_clk_ratio 0xfff041c0 #DFS
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/cpu2_heavy_clk_ratio 0xfff041c0 #DFS
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/gpu_light_clk_ratio 0xfff041c1 #OCP
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/cpu2_light_clk_ratio 0xfff041c3 #OCP
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/gpu_heavy_clk_ratio 0xfff04381 #DFS
-    write /sys/devices/virtual/pmic/mitigation/clock_ratio/tpu_heavy_clk_ratio 0xfff041c1 #DFS
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/smpl_lvl 3000
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/soft_ocp_cpu2_lvl 12000
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/soft_ocp_gpu_lvl 9000
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/soft_ocp_tpu_lvl 8500
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/ocp_tpu_lvl 13500
-    write /sys/devices/virtual/pmic/mitigation/triggered_lvl/ocp_gpu_lvl 9000
-    write /sys/devices/virtual/pmic/mitigation/clock_div/tpu_clk_div 0x1
-    write /sys/devices/virtual/pmic/mitigation/clock_div/gpu_clk_div 0x1
-    write /sys/devices/virtual/pmic/mitigation/clock_div/cpu2_clk_div 0x1
-    write /sys/devices/platform/cpupm/cpupm/cpd_cl1 1 #Enable power down
-    write /sys/devices/platform/cpupm/cpupm/cpd_cl2 1 #Enable power down
 
 on property:vendor.thermal.link_ready=1
     chown system system /dev/thermal/tz-by-name/soc/mode
@@ -779,6 +769,9 @@ on property:vendor.thermal.link_ready=1
     chown system system /dev/thermal/cdev-by-name/wlc_fcc/cur_state
     chown system system /dev/thermal/cdev-by-name/chg_mdis/cur_state
     chown system system /dev/thermal/cdev-by-name/usbc-port/cur_state
+    chown system system /dev/thermal/cdev-by-name/thermal-uclamp-0/cur_state
+    chown system system /dev/thermal/cdev-by-name/thermal-uclamp-4/cur_state
+    chown system system /dev/thermal/cdev-by-name/thermal-uclamp-7/cur_state
 
 on charger
     # Use charger thermal config

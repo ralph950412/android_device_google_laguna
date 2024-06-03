@@ -365,7 +365,7 @@ void addGPU(std::shared_ptr<PowerStats> p) {
         {"890000", 4333}};
 
     p->addEnergyConsumer(PowerStatsEnergyConsumer::createMeterAndAttrConsumer(p,
-            EnergyConsumerType::OTHER, "GPU", {"S2S_VDD_G3D", "S8S_VDD_G3D_L2"},
+            EnergyConsumerType::OTHER, "GPU", {"S2S_VDD_G3D"},
             {{UID_TIME_IN_STATE, path + "/uid_time_in_state"}},
             stateCoeffs));
 
@@ -475,6 +475,24 @@ void addPCIe(std::shared_ptr<PowerStats> p) {
 
     p->addStateResidencyDataProvider(std::make_unique<GenericStateResidencyDataProvider>(
             "/sys/devices/platform/13120000.pcie/power_stats", pcieWifiCfgs));
+
+    // Add PCIe Modem GEN
+    const GenericStateResidencyDataProvider::StateResidencyConfig modemGenStateConfig = {
+        .entryCountSupported = true,
+        .entryCountPrefix = "count:",
+        .totalTimeSupported = true,
+        .totalTimePrefix = "duration msec:",
+    };
+    const std::vector<std::pair<std::string, std::string>> modemGenStateHeaders = {
+        std::make_pair("GEN1", "Gen1:"),
+        std::make_pair("GEN3", "Gen3:"),
+    };
+    const std::vector<GenericStateResidencyDataProvider::PowerEntityConfig> modemGenCfgs = {
+        {generateGenericStateResidencyConfigs(modemGenStateConfig, modemGenStateHeaders),
+            "PCIe-Modem-GEN", "link_speed:"}
+    };
+    p->addStateResidencyDataProvider(std::make_unique<GenericStateResidencyDataProvider>(
+            "/sys/devices/platform/12100000.pcie/link_duration", modemGenCfgs));
 }
 
 void addWifi(std::shared_ptr<PowerStats> p) {
@@ -620,12 +638,15 @@ void addTPU(std::shared_ptr<PowerStats> p) {
     stateCoeffs = {
         // TODO (b/197721618): Measuring the TPU power numbers
         {"226000",  10},
-        {"627000",  20},
-        {"845000",  30},
-        {"1066000", 40}};
+        {"455000",  20},
+        {"627000",  30},
+        {"712000",  40},
+        {"845000",  50},
+        {"967000",  60}, // Do not change to 1066000
+        {"1119000", 70}};
 
     p->addEnergyConsumer(PowerStatsEnergyConsumer::createMeterAndAttrConsumer(p,
-            EnergyConsumerType::OTHER, "TPU", {"S10M_VDD_TPU"},
+            EnergyConsumerType::OTHER, "TPU", {"S7M_VDD_TPU"},
             {{UID_TIME_IN_STATE, "/sys/class/edgetpu/edgetpu-soc/device/tpu_usage"}},
             stateCoeffs));
 }
@@ -636,11 +657,18 @@ void addTPU(std::shared_ptr<PowerStats> p) {
  * that live in user space. Entities are defined here and user space clients of this provider's
  * vendor service register callbacks to provide state residency data for their given pwoer entity.
  */
-void addPixelStateResidencyDataProvider(std::shared_ptr<PowerStats> p) {
+void addPixelStateResidencyDataProvider(std::shared_ptr<PowerStats> p, std::string displayName) {
 
     auto pixelSdp = std::make_unique<PixelStateResidencyDataProvider>();
 
+    // Bluetooth power stats are provided by BT HAL callback
     pixelSdp->addEntity("Bluetooth", {{0, "Idle"}, {1, "Active"}, {2, "Tx"}, {3, "Rx"}});
+
+    // Display VRR power stats are provided by HWC callback. If display entity
+    // name is empty, the device doesn't support VRR power stats.
+    if (!displayName.empty()) {
+        pixelSdp->addEntity(displayName, {});
+    }
 
     pixelSdp->start();
 
@@ -656,18 +684,10 @@ void addDisplayMrr(std::shared_ptr<PowerStats> p) {
     addDisplayMrrByEntity(p, "Display", "/sys/class/drm/card0/device/primary-panel/");
 }
 
-void addDisplayVrr(std::shared_ptr<PowerStats> p, std::string name) {
-    auto provider = std::make_unique<PixelStateResidencyDataProvider>();
-    provider->addEntity(name, {});
-    provider->start();
-    p->addStateResidencyDataProvider(std::move(provider));
-}
-
 void addZumaProCommonDataProviders(std::shared_ptr<PowerStats> p) {
     setEnergyMeter(p);
 
     addAoC(p);
-    addPixelStateResidencyDataProvider(p);
     addCPUclusters(p);
     addSoC(p);
     addGNSS(p);

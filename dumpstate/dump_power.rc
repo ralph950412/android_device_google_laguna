@@ -11,6 +11,9 @@ on init
     chown system system /dev/battery_history
     chmod 0644 /dev/battery_history
 
+    chown system system /dev/maxfg_history
+    chmod 0644 /dev/maxfg_history
+
     # Charge stats (write 0)
     chown system system /sys/class/power_supply/battery/charge_stats
 
@@ -100,11 +103,13 @@ on early-boot
     chown system system /dev/logbuffer_ttf
     chown system system /dev/logbuffer_tcpm
     chown system system /dev/logbuffer_usbpd
+    chown system system /dev/logbuffer_pogo_transport
     chown system system /dev/logbuffer_wireless
     chown system system /dev/logbuffer_pca9468
     chown system system /dev/logbuffer_ln8411
     chown system system /dev/logbuffer_cpm
     chown system system /dev/logbuffer_wc68
+    chown system system /dev/logbuffer_max77779_fwupdate
 
 on property:sys.boot_completed=1
     # gvotables for dumpstate
