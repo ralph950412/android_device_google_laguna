@@ -235,6 +235,21 @@ void dumpPowerSupplyDock() {
     }
 }
 
+void dumpSecondCharge() {
+    const char* powerSupplyPropertySecChgTitle = "Power supply property rt9471";
+    const char* powerSupplyPropertySecChgFile = "/sys/class/power_supply/rt9471/uevent";
+    const char *secChgTitle = "RT9470G";
+    const char *secChgFile = "/sys/devices/platform/10ca0000.hsi2c/i2c-10/10-005b/registers_dump";
+
+    if (isValidFile(powerSupplyPropertySecChgFile)) {
+        dumpFileContent(powerSupplyPropertySecChgTitle, powerSupplyPropertySecChgFile);
+    }
+
+    if (isValidFile(secChgFile)) {
+        dumpFileContent(secChgTitle, secChgFile);
+    }
+}
+
 void dumpLogBufferTcpm() {
     const char* logbufferTcpmTitle = "Logbuffer TCPM";
     const char* logbufferTcpmFile = "/dev/logbuffer_tcpm";
@@ -776,6 +791,11 @@ void dumpMitigationDirs() {
     };
     const int eraseCnt[] = {6, 6, 4, 0};
     const bool useTitleRow[] = {true, true, true, false};
+    const char *vimon_name = "vimon_buff";
+    const char delimiter = '\n';
+    const int vimon_len = strlen(vimon_name);
+    const double VIMON_VMULT = 7.8122e-5;
+    const double VIMON_IMULT = 7.8125e-4;
 
     std::vector<std::string> files;
     std::string content;
@@ -783,6 +803,9 @@ void dumpMitigationDirs() {
     std::string source;
     std::string subModuleName;
     std::string readout;
+    char *endptr;
+
+    bool vimon_found = false;
 
     for (int i = 0; i < paramCount; i++) {
         printTitle(titles[i]);
@@ -800,11 +823,40 @@ void dumpMitigationDirs() {
 
             readout = android::base::Trim(content);
 
+            if (strncmp(file.c_str(), vimon_name, vimon_len) == 0)
+                vimon_found = true;
+
             subModuleName = std::string(file);
             subModuleName.erase(subModuleName.find(paramSuffix[i]), eraseCnt[i]);
 
             if (useTitleRow[i]) {
                 printf("%s \t%s\n", subModuleName.c_str(), readout.c_str());
+            } else if (vimon_found) {
+
+                std::vector<std::string> tokens;
+                std::istringstream tokenStream(readout);
+                std::string token;
+
+                while (std::getline(tokenStream, token, delimiter)) {
+                    tokens.push_back(token);
+                }
+
+                bool oddEntry = true;
+                for (auto &hexval : tokens) {
+                    int val = strtol(hexval.c_str(), &endptr, 16);
+                    if (*endptr != '\0') {
+                        printf("invalid vimon readout\n");
+                        break;
+                    }
+                    if (oddEntry) {
+                        int vbatt = int(1000 * (val * VIMON_VMULT));
+                        printf("vimon vbatt: %d ", vbatt);
+                    } else {
+                        int ibatt = int(1000 * (val * VIMON_IMULT));
+                        printf("ibatt: %d\n", ibatt);
+                    }
+                    oddEntry = !oddEntry;
+                }
             } else {
                 printf("%s=%s\n", subModuleName.c_str(), readout.c_str());
             }
@@ -1032,6 +1084,7 @@ int main() {
     dumpPowerStatsTimes();
     dumpAcpmStats();
     dumpPowerSupplyStats();
+    dumpSecondCharge();
     dumpMaxFg();
     dumpPowerSupplyDock();
     dumpLogBufferTcpm();
