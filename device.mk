@@ -82,7 +82,6 @@ PRODUCT_SOONG_NAMESPACES += \
 	vendor/google_devices/common/chre/host/hal \
 	vendor/google/whitechapel/tools \
 	vendor/google/interfaces \
-	vendor/google_devices/common/proprietary/confirmatioui_hal \
 	vendor/google_nos/host/android \
 	vendor/google_nos/test/system-test-harness \
 	vendor/google/camera
@@ -97,8 +96,10 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 	ro.oem_unlock_supported=1
 
 # Include vendor telephony soong namespace
+ifneq ($(BOARD_WITHOUT_RADIO), true)
 PRODUCT_SOONG_NAMESPACES += \
 	vendor/samsung_slsi/telephony/$(BOARD_USES_SHARED_VENDOR_TELEPHONY)
+endif
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 #Set IKE logs to verbose for WFC
@@ -222,27 +223,25 @@ ifneq ($(BOARD_WITHOUT_RADIO),true)
 # The "power-anomaly-sitril" is added into PRODUCT_SOONG_NAMESPACES when
 # $(USE_LASSEN_OEMHOOK) is true and $(BOARD_WITHOUT_RADIO) is not true.
 PRODUCT_SOONG_NAMESPACES += vendor/google/tools/power-anomaly-sitril
+$(call soong_config_set,sitril,use_lassen_oemhook_with_radio,true)
 
 $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHARED_VENDOR_TELEPHONY)/common/device-vendor.mk)
 
 # modem_ml_svc_sit daemon
 PRODUCT_PACKAGES += modem_ml_svc_sit
 
-ifeq (,$(filter aosp_%,$(TARGET_PRODUCT)))
-# Modem ML TFLite service.
-PRODUCT_PACKAGES += modemml-tflite-service \
-	libtensorflowlite_jni
+# TODO: b/350624523 - Add back modem ML TFLite service after it is ready.
+# ifeq (,$(filter aosp_%,$(TARGET_PRODUCT)))
+# # Modem ML TFLite service.
+# PRODUCT_PACKAGES += modemml-tflite-service \
+# 	libtensorflowlite_jni
 
-# Allow TFLite service modules to be installed to the system partition
-PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
-	system/etc/vintf/manifest/modemml_tflite_service.xml \
-	system/framework/modemml-tflite-service.jar \
-	system/framework/oat/arm64/modemml-tflite-service.odex \
-	system/framework/oat/arm64/modemml-tflite-service.vdex \
-	system/lib64/libtensorflowlite_jni.so
+# # Allow TFLite service modules to be installed to the system partition
+# PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
+# 	system/lib64/libtensorflowlite_jni.so
 
-PRODUCT_SYSTEM_SERVER_JARS += modemml-tflite-service
-endif
+# PRODUCT_SYSTEM_SERVER_JARS += system_ext:modemml-tflite-service
+# endif
 
 # modem ML models configs
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -278,11 +277,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Pixel Logger
 include hardware/google/pixel/PixelLogger/PixelLogger.mk
 
-# RIL extension service
-ifeq (,$(filter aosp_% factory_%,$(TARGET_PRODUCT)))
-include device/google/gs-common/pixel_ril/ril.mk
-endif
-
 # Use Lassen specifc Shared Modem Platform
 SHARED_MODEM_PLATFORM_VENDOR := lassen
 
@@ -298,7 +292,6 @@ include device/google/gs-common/modem/shared_modem_platform/shared_modem_platfor
 
 # Use for GRIL
 USES_LASSEN_MODEM := true
-USE_WHI_GRIL_RECOVERY := true
 
 ifeq ($(USES_GOOGLE_DIALER_CARRIER_SETTINGS),true)
 USE_GOOGLE_DIALER := true
@@ -342,8 +335,17 @@ PRODUCT_PACKAGES += \
 	csffw_image_prebuilt__firmware_prebuilt_ttux_mali_csffw.bin \
 	libGLES_mali \
 	vulkan.mali \
-	libOpenCL \
 	libgpudataproducer
+
+# Install the OpenCL ICD Loader
+PRODUCT_SOONG_NAMESPACES += external/OpenCL-ICD-Loader
+PRODUCT_PACKAGES += \
+	libOpenCL \
+	mali_icd__customer_pixel_opencl-icd_ARM.icd
+ifeq ($(DEVICE_IS_64BIT_ONLY),false)
+PRODUCT_PACKAGES += \
+	mali_icd__customer_pixel_opencl-icd_ARM32.icd
+endif
 
 ifeq ($(USE_SWIFTSHADER),true)
 $(warning USE_SWIFTSHADER set to current target)
@@ -366,11 +368,10 @@ endif
 PRODUCT_VENDOR_PROPERTIES += ro.surface_flinger.prime_shader_cache.ultrahdr=1
 
 # Mali Configuration Properties
-# b/221255664 prevents setting PROTECTED_MAX_CORE_COUNT=2
 PRODUCT_VENDOR_PROPERTIES += \
 	vendor.mali.platform.config=/vendor/etc/mali/platform.config \
 	vendor.mali.debug.config=/vendor/etc/mali/debug.config \
-	vendor.mali.base_protected_max_core_count=1 \
+	vendor.mali.base_protected_max_core_count=4 \
 	vendor.mali.base_protected_tls_max=67108864 \
 	vendor.mali.platform_agt_frequency_khz=24576
 
@@ -400,6 +401,7 @@ PRODUCT_VENDOR_PROPERTIES += \
 DEVICE_MANIFEST_FILE := \
 	device/google/zumapro/manifest.xml
 
+BOARD_USE_CODEC2_AIDL := V1
 ifneq (,$(filter aosp_%,$(TARGET_PRODUCT)))
 DEVICE_MANIFEST_FILE += \
 	device/google/zumapro/manifest_media_aosp.xml
@@ -438,7 +440,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.zumapro.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.soc.rc \
 	device/google/zumapro/conf/init.zuma.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zuma.soc.rc \
-	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc
+	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc \
+	device/google/zumapro/conf/init.efs.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_COPY_FILES += \
@@ -453,6 +456,14 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.zuma.rc
 
 # Fstab files
+ifeq (ext4,$(TARGET_RW_FILE_SYSTEM_TYPE))
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/ext4
+else
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/f2fs
+endif
+
 PRODUCT_PACKAGES += \
 	fstab.zuma \
 	fstab.zumapro \
@@ -465,7 +476,8 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
 	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
-	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.modem:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.modem
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.ro.modem:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.modem \
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.efs:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.efs
 
 # Shell scripts
 PRODUCT_PACKAGES += \
@@ -753,11 +765,18 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.accessory.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.accessory.xml
 
 PRODUCT_COPY_FILES += \
-	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml \
 	frameworks/native/data/etc/android.hardware.camera.front.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.front.xml \
 	frameworks/native/data/etc/android.hardware.camera.concurrent.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.concurrent.xml \
 	frameworks/native/data/etc/android.hardware.camera.full.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.full.xml\
 	frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml\
+
+ifneq ($(DISABLE_CAMERA_FS),true)
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml
+else
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.camera.autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.autofocus.xml
+endif
 
 #PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
@@ -881,11 +900,18 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
 
 PRODUCT_PROPERTY_OVERRIDES += \
-       debug.stagefright.c2-poolmask=458752 \
        debug.c2.use_dmabufheaps=1 \
        media.c2.dmabuf.padding=512 \
        debug.stagefright.ccodec_delayed_params=1 \
        ro.vendor.gpu.dataspace=1
+
+ifneq ($(BOARD_USE_CODEC2_AIDL), )
+PRODUCT_PROPERTY_OVERRIDES += \
+        debug.stagefright.c2-poolmask=1507328
+else
+PRODUCT_PROPERTY_OVERRIDES += \
+        debug.stagefright.c2-poolmask=458752
+endif
 
 # Create input surface on the framework side
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -930,9 +956,6 @@ PRODUCT_PACKAGES_DEBUG += \
     trusty-ut-ctrl \
     tipc-test \
     trusty_stats_test \
-
-# Remove confirmation UI (b/316160738)
-# include device/google/gs101/confirmationui/confirmationui.mk
 
 # Trusty Metrics Daemon
 PRODUCT_SOONG_NAMESPACES += \
@@ -981,7 +1004,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	ro.postinstall.fstab.prefix=/product
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/fstab.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
+	device/google/zumapro/conf/fstab.ro.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
 
 # fastbootd
 PRODUCT_PACKAGES += \
@@ -1029,6 +1052,8 @@ SUPPORT_NR_DS := true
 USE_RADIO_HAL_2_1 := true
 # Using Early Send Device Info
 USE_EARLY_SEND_DEVICE_INFO := true
+# Using New Radio Access Format to modem
+USE_NEW_RADIO_ACCESS_SPECIFIER_FORMAT := true
 
 #$(call inherit-product, vendor/google_devices/telephony/common/device-vendor.mk)
 #$(call inherit-product, vendor/google_devices/zumapro/proprietary/device-vendor.mk)
@@ -1059,6 +1084,9 @@ PRODUCT_PACKAGES += \
 	android.hardware.health-service.zumapro_recovery \
 
 # Audio
+# Audio Vendor Prebuilt
+$(call soong_config_set,aoc_spk_post_processing,prebuilts_dir,$(RELEASE_GOOGLE_SPKPOSTPROCESSING_ZUMAPRO_DIR))
+
 # Audio HAL Server & Default Implementations
 ifeq ($(USE_AUDIO_HAL_AIDL),true)
 include device/google/gs-common/audio/aidl.mk
@@ -1216,6 +1244,13 @@ include hardware/google/pixel/HardwareInfo/HardwareInfo.mk
 # UFS: the script is used to select the corresponding firmware to run FFU.
 PRODUCT_PACKAGES_DEBUG += ufs_firmware_update.sh
 
+ifneq ($(BOARD_WITHOUT_RADIO),true)
+# RIL extension service
+ifeq (,$(filter aosp_% factory_%,$(TARGET_PRODUCT)))
+include device/google/gs-common/pixel_ril/ril.mk
+endif
+endif
+
 SUPPORT_VENDOR_SATELLITE_SERVICE := true
 
 # Telephony satellite geofence data file
@@ -1240,3 +1275,5 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # since it can't be overridden from /vendor.
 PRODUCT_PRODUCT_PROPERTIES += \
 	dumpstate.strict_run=false
+
+PRODUCT_NO_BIONIC_PAGE_SIZE_MACRO := true
