@@ -9,7 +9,6 @@ on init
     chown system system /sys/devices/system/cpu/cpufreq/policy7/sched_pixel/limit_frequency
     chown system system /sys/devices/system/cpu/cpufreq/policy7/sched_pixel/pmu_limit_enable
 
-
     chown system system /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu0_memlat@17000010/memlat_cpuidle_state_aware
     chown system system /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu1_memlat@17000010/memlat_cpuidle_state_aware
     chown system system /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu2_memlat@17000010/memlat_cpuidle_state_aware
@@ -59,17 +58,6 @@ on init
     write /proc/vendor_sched/groups/sys/disable_util_est 1
     write /proc/vendor_sched/groups/sys_bg/disable_util_est 1
     write /proc/vendor_sched/groups/ta/disable_util_est 0
-
-    # governor setting
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor sched_pixel
-    write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/down_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor sched_pixel
-    write /sys/devices/system/cpu/cpu4/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu4/cpufreq/sched_pixel/down_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu7/cpufreq/scaling_governor sched_pixel
-    write /sys/devices/system/cpu/cpu7/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu7/cpufreq/sched_pixel/down_rate_limit_us 500
 
     # memlat cpuidle awareness setting
     # FIXME(b/301212469) these nodes missing on zuma pro
