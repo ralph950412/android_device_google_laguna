@@ -317,18 +317,11 @@ void dumpPdEngine() {
             {"TCPC logbuffer", "/dev/logbuffer_usbpd"},
             {"pogo_transport logbuffer", "/dev/logbuffer_pogo_transport"},
             {"PPS-google_cpm logbuffer", "/dev/logbuffer_cpm"},
+            {"PPS-dc logbuffer", "/dev/logbuffer_dc_mains"}
     };
-    const char* ppsDcMsg = "PPS-dc logbuffer";
-    const char* pca9468dir = "/dev/logbuffer_pca9468";
-    const char* ln8411dir = "/dev/logbuffer_ln8411";
 
     for (const auto &row : pdEngine) {
         dumpFileContent(row[0], row[1]);
-    }
-    if (isValidFile(pca9468dir)) {
-        dumpFileContent(ppsDcMsg, pca9468dir);
-    } else {
-        dumpFileContent(ppsDcMsg, ln8411dir);
     }
 }
 
