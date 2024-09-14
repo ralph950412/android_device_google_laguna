@@ -68,6 +68,7 @@
             <Feature name="vq-minimum-quality"/>
             <Feature name="encoding-statistics"/>
             <Feature name="hdr-editing" />
+            <Feature name="hlg-editing" />
         </MediaCodec>
     </Encoders>
 </MediaCodecs>
