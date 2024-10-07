@@ -143,17 +143,9 @@
             <instance>default</instance>
         </interface>
     </hal>
-    <hal format="hidl" optional="true">
-        <name>vendor.google.radioext</name>
-        <version>1.7</version>
-        <interface>
-            <name>IRadioExt</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
     <hal format="aidl" optional="true">
         <name>vendor.google.wifi_ext</name>
-        <version>2-3</version>
+        <version>2-4</version>
         <interface>
             <name>IWifiExt</name>
             <instance>default</instance>

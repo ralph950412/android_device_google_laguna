@@ -16,6 +16,21 @@
       ]
     },
     {
+      "Name": "PreferIdle",
+      "Actions": [
+        {
+          "Name": "WriteFile",
+          "Params":
+          {
+            "FilePath": "/proc/vendor_sched/prefer_idle_set",
+            "ProcFilePath": "/proc/vendor_sched/prefer_idle_set",
+            "Value": "<pid>",
+            "LogFailures": "false"
+          }
+        }
+      ]
+    },
+    {
       "Name": "CameraServicePerformance",
       "Actions": [
         {
@@ -303,6 +318,10 @@
     {
       "Name": "OtaProfiles",
       "Profiles": [ "OtaPerformance", "ServiceCapacityLow", "LowIoPriority", "TimerSlackHigh" ]
+    },
+    {
+      "Name": "InputPolicy",
+      "Profiles": [ "MaxPerformance", "ResetUclampGrp", "PreferIdle" ]
     }
   ]
 }

@@ -80,6 +80,7 @@ PRODUCT_SOONG_NAMESPACES += \
 	device/google/zumapro \
 	device/google/zumapro/powerstats \
 	vendor/google_devices/common/chre/host/hal \
+	vendor/google_devices/zumapro/proprietary/debugpolicy \
 	vendor/google/whitechapel/tools \
 	vendor/google/interfaces \
 	vendor/google_nos/host/android \
@@ -216,9 +217,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \
-	persist.sys.hdcp_checking=always
+	persist.sys.hdcp_checking=drm-only
 
 USE_LASSEN_OEMHOOK := true
+
+# Pixel Logger
+include hardware/google/pixel/PixelLogger/PixelLogger.mk
+
 ifneq ($(BOARD_WITHOUT_RADIO),true)
 # The "power-anomaly-sitril" is added into PRODUCT_SOONG_NAMESPACES when
 # $(USE_LASSEN_OEMHOOK) is true and $(BOARD_WITHOUT_RADIO) is not true.
@@ -274,9 +279,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.modem.extensive_logging_enabled=false
 
-# Pixel Logger
-include hardware/google/pixel/PixelLogger/PixelLogger.mk
-
 # Use Lassen specifc Shared Modem Platform
 SHARED_MODEM_PLATFORM_VENDOR := lassen
 
@@ -298,6 +300,8 @@ USE_GOOGLE_DIALER := true
 USE_GOOGLE_CARRIER_SETTINGS := true
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.uses_google_dialer_carrier_settings=1
+# GoogleDialer in PDK build with "USES_GOOGLE_DIALER_CARRIER_SETTINGS=true"
+PRODUCT_SOONG_NAMESPACES += vendor/google_devices/zumapro/proprietary/GoogleDialer
 endif
 
 ifeq ($(USES_GOOGLE_PREBUILT_MODEM_SVC),true)
@@ -321,8 +325,14 @@ else
 TARGET_USES_VULKAN = true
 endif
 
+# "vendor/arm" doesn't exist in PDK build
+ifeq (,$(realpath $(TOPDIR)vendor/arm/mali/valhall/Android.bp))
+PRODUCT_SOONG_NAMESPACES += \
+	vendor/google_devices/zumapro/prebuilts/gpu
+else
 PRODUCT_SOONG_NAMESPACES += \
 	vendor/arm/mali/valhall
+endif
 
 $(call soong_config_set,pixel_mali,soc,$(TARGET_BOARD_PLATFORM))
 # TODO (b/297408842): The gralloc is being open-sourced, and we cannot pass
@@ -397,6 +407,8 @@ PRODUCT_VENDOR_PROPERTIES += \
 # GRAPHICS - GPU (end)
 # ####################
 
+PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
+
 # Device Manifest, Device Compatibility Matrix for Treble
 DEVICE_MANIFEST_FILE := \
 	device/google/zumapro/manifest.xml
@@ -421,8 +433,6 @@ DEVICE_MATRIX_FILE := \
 	device/google/zumapro/compatibility_matrix.xml
 
 DEVICE_PACKAGE_OVERLAYS += device/google/zumapro/overlay
-
-PRODUCT_SHIPPING_API_LEVEL := 34
 
 # RKP VINTF
 -include vendor/google_nos/host/android/hals/keymaster/aidl/strongbox/RemotelyProvisionedComponent-citadel.mk
@@ -456,7 +466,10 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.zuma.rc
 
 # Fstab files
-ifeq (ext4,$(TARGET_RW_FILE_SYSTEM_TYPE))
+ifeq (true,$(TARGET_BOOTS_16K))
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/fs-16kb
+else ifeq (ext4,$(TARGET_RW_FILE_SYSTEM_TYPE))
 PRODUCT_SOONG_NAMESPACES += \
         device/google/zumapro/conf/ext4
 else
@@ -475,7 +488,7 @@ PRODUCT_PACKAGES += \
 	fstab.zumapro-fips.vendor_ramdisk
 
 PRODUCT_COPY_FILES += \
-	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
 	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.ro.modem:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.modem \
 	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.efs:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.efs
 
@@ -518,8 +531,6 @@ PRODUCT_COPY_FILES += \
 
 ## Enable the CHRE Daemon
 CHRE_USF_DAEMON_ENABLED := false
-PRODUCT_PACKAGES += \
-	preloaded_nanoapps.json
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
@@ -645,6 +656,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += aaudio.mmap_policy=2
 PRODUCT_PROPERTY_OVERRIDES += aaudio.mmap_exclusive_policy=2
 PRODUCT_PROPERTY_OVERRIDES += aaudio.hw_burst_min_usec=2000
+
+# Set util_clamp_min for s/w spatializer
+PRODUCT_PROPERTY_OVERRIDES += audio.spatializer.effect.util_clamp_min=300
 
 # Calliope firmware overwrite
 #PRODUCT_COPY_FILES += \
@@ -847,8 +861,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += vendor.display.1.brightness.dimming.usage?
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.sys.sf.native_mode=2
-PRODUCT_COPY_FILES += \
-	device/google/zumapro/display/display_colordata_cal0.pb:$(TARGET_COPY_OUT_VENDOR)/etc/display_colordata_cal0.pb
 
 # limit DPP downscale ratio
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += vendor.hwc.dpp.downscale=4
@@ -1168,7 +1180,7 @@ PRODUCT_SOONG_NAMESPACES += \
 	vendor/google_devices/zumapro/proprietary/gchips/tpu/nnapi_stable_aidl \
 	vendor/google_devices/zumapro/proprietary/gchips/tpu/aidl \
 	vendor/google_devices/zumapro/proprietary/gchips/tpu/hal \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/tachyon/api \
+	vendor/google_devices/zumapro/proprietary/gchips/tpu/tachyon/tachyon_apis \
 	vendor/google_devices/zumapro/proprietary/gchips/tpu/tachyon/service
 # TPU firmware
 PRODUCT_PACKAGES += edgetpu-rio.fw
