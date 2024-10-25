@@ -51,12 +51,21 @@ PRODUCT_VENDOR_PROPERTIES += \
 	vendor.zram.size?=50p
 
 # Indicate that the bootloader supports the MTE developer option switch
-# (MISC_MEMTAG_MODE_MEMTAG_ONCE), with the exception of _fullmte products that
-# force enable MTE.
+# (MISC_MEMTAG_MODE_MEMTAG_ONCE), with the exception of _fullmte products and
+# eng products that force enable MTE
 ifeq (,$(filter %_fullmte,$(TARGET_PRODUCT)))
+ifeq (,$(filter eng,$(TARGET_BUILD_VARIANT)))
 PRODUCT_PRODUCT_PROPERTIES += ro.arm64.memtag.bootctl_supported=1
 PRODUCT_PRODUCT_PROPERTIES += persist.arm64.memtag.app.com.android.se=off
 PRODUCT_PRODUCT_PROPERTIES += persist.arm64.memtag.app.com.google.android.bluetooth=off
 PRODUCT_PRODUCT_PROPERTIES += persist.arm64.memtag.app.com.android.nfc=off
 PRODUCT_PRODUCT_PROPERTIES += persist.arm64.memtag.system_server=off
+endif
+endif
+
+ifeq (,$(filter %_fullmte,$(TARGET_PRODUCT)))
+ifneq (,$(filter eng,$(TARGET_BUILD_VARIANT)))
+PRODUCT_COPY_FILES += \
+       device/google/zumapro/conf/init.eng.memtag.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.eng.memtag.rc
+endif
 endif
