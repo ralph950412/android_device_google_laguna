@@ -143,6 +143,37 @@ on init
     write /sys/devices/system/cpu/cpu6/mte_tcf_preferred asymm
     write /sys/devices/system/cpu/cpu7/mte_tcf_preferred asymm
 
+    # Change permission of sched qos nodes
+    chown system system /proc/vendor_sched/sched_qos/adpf_set
+    chown system system /proc/vendor_sched/sched_qos/adpf_clear
+    chown system system /proc/vendor_sched/sched_qos/auto_uclamp_max_set
+    chown system system /proc/vendor_sched/sched_qos/auto_uclamp_max_clear
+    chown system system /proc/vendor_sched/sched_qos/boost_prio_set
+    chown system system /proc/vendor_sched/sched_qos/boost_prio_clear
+    chown system system /proc/vendor_sched/sched_qos/preempt_wakeup_set
+    chown system system /proc/vendor_sched/sched_qos/preempt_wakeup_clear
+    chown system system /proc/vendor_sched/sched_qos/prefer_fit_set
+    chown system system /proc/vendor_sched/sched_qos/prefer_fit_clear
+    chown system system /proc/vendor_sched/sched_qos/prefer_high_cap_set
+    chown system system /proc/vendor_sched/sched_qos/prefer_high_cap_clear
+    chown system system /proc/vendor_sched/sched_qos/prefer_idle_set
+    chown system system /proc/vendor_sched/sched_qos/prefer_idle_clear
+
+    chmod 0220 /proc/vendor_sched/sched_qos/adpf_set
+    chmod 0220 /proc/vendor_sched/sched_qos/adpf_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/auto_uclamp_max_set
+    chmod 0220 /proc/vendor_sched/sched_qos/auto_uclamp_max_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/boost_prio_set
+    chmod 0220 /proc/vendor_sched/sched_qos/boost_prio_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/preempt_wakeup_set
+    chmod 0220 /proc/vendor_sched/sched_qos/preempt_wakeup_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_fit_set
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_fit_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_high_cap_set
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_high_cap_clear
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_idle_set
+    chmod 0220 /proc/vendor_sched/sched_qos/prefer_idle_clear
+
     # Enable sched_qos for some groups
     write /proc/vendor_sched/groups/ta/qos_adpf_enable 1
     write /proc/vendor_sched/groups/ta/qos_auto_uclamp_max_enable 1
