@@ -143,6 +143,41 @@ on init
     write /sys/devices/system/cpu/cpu6/mte_tcf_preferred asymm
     write /sys/devices/system/cpu/cpu7/mte_tcf_preferred asymm
 
+    # Enable sched_qos for some groups
+    write /proc/vendor_sched/groups/ta/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/ta/qos_auto_uclamp_max_enable 1
+    write /proc/vendor_sched/groups/ta/qos_boost_prio_enable 1
+    write /proc/vendor_sched/groups/ta/qos_preempt_wakeup_enable 1
+    write /proc/vendor_sched/groups/ta/qos_prefer_fit_enable 1
+    write /proc/vendor_sched/groups/ta/qos_prefer_high_cap_enable 1
+    write /proc/vendor_sched/groups/ta/qos_prefer_idle_enable 1
+    write /proc/vendor_sched/groups/fg/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/fg/qos_auto_uclamp_max_enable 1
+    write /proc/vendor_sched/groups/fg/qos_boost_prio_enable 1
+    write /proc/vendor_sched/groups/fg/qos_preempt_wakeup_enable 1
+    write /proc/vendor_sched/groups/fg/qos_prefer_fit_enable 1
+    write /proc/vendor_sched/groups/fg/qos_prefer_high_cap_enable 1
+    write /proc/vendor_sched/groups/fg/qos_prefer_idle_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_auto_uclamp_max_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_boost_prio_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_preempt_wakeup_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_prefer_fit_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_prefer_high_cap_enable 1
+    write /proc/vendor_sched/groups/fg_wi/qos_prefer_idle_enable 1
+    write /proc/vendor_sched/groups/cam/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/cam/qos_auto_uclamp_max_enable 1
+    write /proc/vendor_sched/groups/cam/qos_prefer_fit_enable 1
+    write /proc/vendor_sched/groups/cam/qos_prefer_high_cap_enable 1
+    write /proc/vendor_sched/groups/cam/qos_prefer_idle_enable 1
+    write /proc/vendor_sched/groups/cam_power/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/cam_power/qos_auto_uclamp_max_enable 1
+    write /proc/vendor_sched/groups/cam_power/qos_prefer_fit_enable 1
+    write /proc/vendor_sched/groups/cam_power/qos_prefer_high_cap_enable 1
+    write /proc/vendor_sched/groups/cam_power/qos_prefer_idle_enable 1
+    write /proc/vendor_sched/groups/rt/qos_adpf_enable 1
+    write /proc/vendor_sched/groups/sf/qos_adpf_enable 1
+
 on zygote-start
     # For PixelLogger configuration file.
     chmod 0771 /data/vendor/wifi
