@@ -1219,6 +1219,7 @@ void queryVersionHelper(android::hardware::usb::Usb *usb,
         queryMoistureDetectionStatus(usb, currentPortStatus);
         queryPowerTransferStatus(usb, currentPortStatus);
         queryNonCompliantChargerStatus(currentPortStatus);
+        queryUsbDataSession(usb, currentPortStatus);
         pthread_mutex_lock(&usb->mDisplayPortLock);
         if (!usb->mDisplayPortFirstSetupDone &&
             usb->getDisplayPortUsbPathHelper(&displayPortUsbPath) == Status::SUCCESS) {
