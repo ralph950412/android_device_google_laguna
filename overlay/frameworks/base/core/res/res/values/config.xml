@@ -533,4 +533,7 @@
 
     <!-- The intent action to handle oem-enabled satellite demo mode SOS messaging. -->
     <string name="config_satellite_demo_mode_sos_intent_action">com.google.android.apps.stargate.ACTION_ESOS_DEMO</string>
+
+    <!-- The receiver class of the intent action to start satellite non-emergency mode -->
+    <string name="config_satellite_carrier_roaming_non_emergency_session_class">com.google.android.apps.stargate.sessionmanager.SessionManagerReceiver_Receiver</string>
 </resources>
