@@ -183,7 +183,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	bluetooth.profile.asha.central.enabled=true \
 	bluetooth.profile.a2dp.source.enabled=true \
 	bluetooth.profile.avrcp.target.enabled=true \
-	bluetooth.profile.bap.unicast.server.enabled=true \
+	bluetooth.profile.bap.unicast.client.enabled=true \
 	bluetooth.profile.bas.client.enabled=true \
 	bluetooth.profile.csip.set_coordinator.enabled=true \
 	bluetooth.profile.gatt.enabled=true \
@@ -198,8 +198,8 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	bluetooth.profile.pan.panu.enabled=true \
 	bluetooth.profile.pbap.server.enabled=true \
 	bluetooth.profile.sap.server.enabled=true \
-	bluetooth.profile.tbs.server.enabled=true \
-	bluetooth.profile.vc.server.enabled=true
+	bluetooth.profile.ccp.server.enabled=true \
+	bluetooth.profile.vcp.controller.enabled=true
 
 # Carrier configuration default location
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -410,13 +410,33 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
 
 # Device Manifest, Device Compatibility Matrix for Treble
+#
+# Install product specific framework compatibility matrix
+# (TODO: b/169535506) This includes the FCM for system_ext and product partition.
+# It must be split into the FCM of each partition.
+ifeq ($(PRODUCT_SHIPPING_API_LEVEL),35)
+DEVICE_MANIFEST_FILE := \
+	device/google/zumapro/manifest_202404.xml
+DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/zumapro/device_framework_matrix_product_202404.xml
+DEVICE_MATRIX_FILE := \
+	device/google/zumapro/compatibility_matrix_202404.xml
+else
 DEVICE_MANIFEST_FILE := \
 	device/google/zumapro/manifest.xml
+DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/zumapro/device_framework_matrix_product_8.xml
+DEVICE_MATRIX_FILE := \
+	device/google/zumapro/compatibility_matrix.xml
+endif
 
 BOARD_USE_CODEC2_AIDL := V1
 ifneq (,$(filter aosp_%,$(TARGET_PRODUCT)))
+ifeq ($(PRODUCT_SHIPPING_API_LEVEL),35)
+DEVICE_MANIFEST_FILE += \
+	device/google/zumapro/manifest_media_aosp_202404.xml
+else
 DEVICE_MANIFEST_FILE += \
 	device/google/zumapro/manifest_media_aosp.xml
+endif
 
 PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml
@@ -428,9 +448,6 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_bo_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml \
 	device/google/zumapro/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_aosp_c2.xml
 endif
-
-DEVICE_MATRIX_FILE := \
-	device/google/zumapro/compatibility_matrix.xml
 
 DEVICE_PACKAGE_OVERLAYS += device/google/zumapro/overlay
 
@@ -451,7 +468,19 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.zumapro.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.soc.rc \
 	device/google/zumapro/conf/init.zuma.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zuma.soc.rc \
 	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc \
-	device/google/zumapro/conf/init.efs.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
+	device/google/zumapro/conf/init.persist.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.persist.rc
+
+ifeq (true,$(filter $(TARGET_BOOTS_16K) $(PRODUCT_16K_DEVELOPER_OPTION),true))
+PRODUCT_COPY_FILES += \
+	device/google/zumapro/conf/init.efs.16k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc \
+	device/google/zumapro/conf/fstab.efs.from_data:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.efs.from_data
+
+PRODUCT_PACKAGES += copy_efs_files_to_data
+PRODUCT_PACKAGES += fsck.f2fs.vendor
+else
+PRODUCT_COPY_FILES += \
+	device/google/zumapro/conf/init.efs.4k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
+endif
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_COPY_FILES += \
@@ -1233,11 +1262,6 @@ include hardware/google/pixel/wifi_ext/device.mk
 # Battery Stats Viewer
 PRODUCT_PACKAGES_DEBUG += BatteryStatsViewer
 
-# Install product specific framework compatibility matrix
-# (TODO: b/169535506) This includes the FCM for system_ext and product partition.
-# It must be split into the FCM of each partition.
-DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/zumapro/device_framework_matrix_product.xml
-
 # Keymint configuration
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.device_id_attestation.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.device_id_attestation.xml \
@@ -1263,8 +1287,6 @@ include device/google/gs-common/pixel_ril/ril.mk
 endif
 endif
 
-SUPPORT_VENDOR_SATELLITE_SERVICE := true
-
 # Telephony satellite geofence data file
 PRODUCT_COPY_FILES += \
         device/google/zumapro/telephony/sats2.dat:$(TARGET_COPY_OUT_VENDOR)/etc/telephony/sats2.dat
@@ -1289,3 +1311,4 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	dumpstate.strict_run=false
 
 PRODUCT_NO_BIONIC_PAGE_SIZE_MACRO := true
+PRODUCT_CHECK_PREBUILT_MAX_PAGE_SIZE := true

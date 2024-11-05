@@ -283,6 +283,9 @@
     <!-- Enable Zram writeback feature to allow unused pages in zram be written to flash. -->
     <bool name="config_zramWriteback">true</bool>
 
+    <!-- the number of the max cached processes in the system. -->
+    <integer name="config_customizedMaxCachedProcesses">1024</integer>
+
     <!-- Enable variable refresh rate when typing. -->
     <bool name="config_variableRefreshRateTypingSupported">false</bool>
 
@@ -531,10 +534,6 @@
     <!-- The intent action to handle oem-enabled satellite demo mode SOS messaging. -->
     <string name="config_satellite_demo_mode_sos_intent_action">com.google.android.apps.stargate.ACTION_ESOS_DEMO</string>
 
-    <!-- User activity timeout: Maximum screen dim duration in milliseconds. -->
-    <integer name="config_maximumScreenDimDuration">20000</integer>
-
-    <!-- User activity timeout: Maximum screen dim duration as a percentage of screen off timeout.
-    -->
-    <fraction name="config_maximumScreenDimRatio">33%</fraction>
+    <!-- The receiver class of the intent action to start satellite non-emergency mode -->
+    <string name="config_satellite_carrier_roaming_non_emergency_session_class">com.google.android.apps.stargate.sessionmanager.SessionManagerReceiver_Receiver</string>
 </resources>
