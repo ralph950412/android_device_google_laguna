@@ -145,14 +145,17 @@ UsbDataSessionMonitor::UsbDataSessionMonitor(
      * and driver architecture. It's ok for addEpollFile to fail here, the file
      * will be monitored later when its presence is detected by uevent.
      */
+    mDeviceState.name = "udc";
     mDeviceState.filePath = deviceStatePath;
     mDeviceState.ueventRegex = deviceUeventRegex;
     addEpollFile(epollFd.get(), mDeviceState.filePath, mDeviceState.fd);
 
+    mHost1State.name = "host1";
     mHost1State.filePath = host1StatePath;
     mHost1State.ueventRegex = host1UeventRegex;
     addEpollFile(epollFd.get(), mHost1State.filePath, mHost1State.fd);
 
+    mHost2State.name = "host2";
     mHost2State.filePath = host2StatePath;
     mHost2State.ueventRegex = host2UeventRegex;
     addEpollFile(epollFd.get(), mHost2State.filePath, mHost2State.fd);
@@ -322,11 +325,11 @@ void UsbDataSessionMonitor::handleDeviceStateEvent(struct usbDeviceState *device
     n = read(deviceState->fd.get(), &state, USB_STATE_MAX_LEN);
 
     if (kValidStates.find(state) == kValidStates.end()) {
-        ALOGE("Invalid state %s", state);
+        ALOGE("Invalid state %s: %s", deviceState->name.c_str(), state);
         return;
     }
 
-    ALOGI("Update USB device state: %s", state);
+    ALOGI("Update device state %s: %s", deviceState->name.c_str(), state);
 
     deviceState->states.push_back(state);
     deviceState->timestamps.push_back(boot_clock::now());
