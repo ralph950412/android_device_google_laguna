@@ -86,6 +86,8 @@ class UsbDataSessionMonitor {
     void updateUdcBindStatus(const std::string &devname);
 
     pthread_t mMonitor;
+    unique_fd mPipefd0;
+    unique_fd mPipefd1;
     unique_fd mEpollFd;
     unique_fd mUeventFd;
     unique_fd mTimerFd;

@@ -102,6 +102,7 @@ UsbDataSessionMonitor::UsbDataSessionMonitor(
     const std::string &dataRolePath, std::function<void()> updatePortStatusCb) {
     struct epoll_event ev;
     std::string udc;
+    int pipefds[2];
 
     unique_fd epollFd(epoll_create(8));
     if (epollFd.get() == -1) {
@@ -132,6 +133,12 @@ UsbDataSessionMonitor::UsbDataSessionMonitor(
         ALOGE("monitor data role failed");
         abort();
     }
+
+    pipe(pipefds);
+    mPipefd0.reset(pipefds[0]);
+    mPipefd1.reset(pipefds[1]);
+    if (addEpollFd(epollFd, mPipefd0))
+        abort();
 
     /*
      * The device state file could be absent depending on the current data role
@@ -169,7 +176,15 @@ UsbDataSessionMonitor::UsbDataSessionMonitor(
           usb_flags::enable_report_usb_data_compliance_warning());
 }
 
-UsbDataSessionMonitor::~UsbDataSessionMonitor() {}
+UsbDataSessionMonitor::~UsbDataSessionMonitor() {
+    /*
+     * Write a character to the pipe to signal the monitor thread to exit.
+     * The character is not important, it can be any value.
+     */
+    int c = 'q';
+    write(mPipefd1, &c, 1);
+    pthread_join(mMonitor, NULL);
+}
 
 void UsbDataSessionMonitor::reportUsbDataSessionMetrics() {
     std::vector<VendorUsbDataSessionEvent> events;
@@ -484,7 +499,9 @@ void *UsbDataSessionMonitor::monitorThread(void *param) {
         }
 
         for (int n = 0; n < nevents; ++n) {
-            if (events[n].data.fd == monitor->mUeventFd.get()) {
+            if (events[n].data.fd == monitor->mPipefd0.get()) {
+                return NULL;
+            } else if (events[n].data.fd == monitor->mUeventFd.get()) {
                 monitor->handleUevent();
             } else if (events[n].data.fd == monitor->mTimerFd.get()) {
                 monitor->handleTimerEvent();
