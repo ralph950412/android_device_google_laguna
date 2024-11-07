@@ -117,6 +117,12 @@ constexpr char kHost1StatePath[] = "/sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1
 constexpr char kHost2UeventRegex[] =
     "/devices/platform/11210000.usb/11210000.dwc3/xhci-hcd-exynos.[0-9].auto/usb2/2-0:1.0";
 constexpr char kHost2StatePath[] = "/sys/bus/usb/devices/usb2/2-0:1.0/usb2-port1/state";
+constexpr char kHubHost1UeventRegex[] =
+    "/devices/platform/11210000.usb/11210000.dwc3/xhci-hcd-exynos.[0-9].auto/usb1/1-1/1-1:1.0";
+constexpr char kHubHost1StatePath[] = "/sys/bus/usb/devices/usb1/1-1/1-1:1.0/1-1-port1/state";
+constexpr char kHubHost2UeventRegex[] =
+    "/devices/platform/11210000.usb/11210000.dwc3/xhci-hcd-exynos.[0-9].auto/usb1/1-1/1-1:1.0";
+constexpr char kHubHost2StatePath[] = "/sys/bus/usb/devices/usb1/1-1/1-1:1.0/1-1-port2/state";
 constexpr char kDataRolePath[] = "/sys/devices/platform/11210000.usb/new_data_role";
 constexpr int kSamplingIntervalSec = 5;
 void queryVersionHelper(android::hardware::usb::Usb *usb,
@@ -536,10 +542,9 @@ static int getInternalHubUniqueId() {
     return internalHubUniqueId;
 }
 
-static Status tuneInternalHub(const char *devname, void* client_data) {
+static Status tuneInternalHub(const char *devname, android::hardware::usb::Usb *usb) {
     uint16_t vendorId, productId;
     struct usb_device *device;
-    ::aidl::android::hardware::usb::Usb *usb;
     int value, index;
 
     device = usb_device_open(devname);
@@ -548,7 +553,6 @@ static Status tuneInternalHub(const char *devname, void* client_data) {
         return Status::ERROR;
     }
 
-    usb = (::aidl::android::hardware::usb::Usb *)client_data;
     value = usb->mUsbHubVendorCmdValue;
     index = usb->mUsbHubVendorCmdIndex;
 
@@ -571,20 +575,46 @@ static Status tuneInternalHub(const char *devname, void* client_data) {
 }
 
 static int usbDeviceRemoved(const char *devname, void* client_data) {
+    string pogoEnableHub;
+    ::aidl::android::hardware::usb::Usb *usb;
+
+    usb = (::aidl::android::hardware::usb::Usb *)client_data;
+
+    if (usb->mIntHubEnabled == true && ReadFileToString(kPogoEnableHub, &pogoEnableHub)
+        && Trim(pogoEnableHub) == "0") {
+        ALOGI("Internal hub disabled");
+        usb->mIntHubEnabled = false;
+        usb->mUsbDataSessionMonitor.reset(new UsbDataSessionMonitor(kUdcUeventRegex, kUdcStatePath,
+                                          kHost1UeventRegex, kHost1StatePath, kHost2UeventRegex,
+                                          kHost2StatePath, kDataRolePath,
+                                          std::bind(&updatePortStatus, usb)));
+    }
+
     return 0;
 }
 
 static int usbDeviceAdded(const char *devname, void* client_data) {
     string pogoEnableHub;
     int uniqueId = 0;
+    ::aidl::android::hardware::usb::Usb *usb;
+
+    usb = (::aidl::android::hardware::usb::Usb *)client_data;
 
     // Enable hub tuning when the pogo dock is connected.
     if (ReadFileToString(kPogoEnableHub, &pogoEnableHub) && Trim(pogoEnableHub) == "1") {
         // If enable_hub is set to 1, the internal hub is the first enumearted device on bus 1 and
         // port 1.
         uniqueId = usb_device_get_unique_id_from_name(devname);
-        if (uniqueId == getInternalHubUniqueId())
-            tuneInternalHub(devname, client_data);
+        if (uniqueId == getInternalHubUniqueId()) {
+            ALOGI("Internal hub enabled");
+            usb->mIntHubEnabled = true;
+            tuneInternalHub(devname, usb);
+            usb->mUsbDataSessionMonitor.reset(new UsbDataSessionMonitor(kUdcUeventRegex,
+                                              kUdcStatePath, kHubHost1UeventRegex,
+                                              kHubHost1StatePath, kHubHost2UeventRegex,
+                                              kHubHost2StatePath, kDataRolePath,
+                                              std::bind(&updatePortStatus, usb)));
+        }
     }
 
     return 0;
@@ -612,9 +642,9 @@ Usb::Usb()
       mRoleSwitchLock(PTHREAD_MUTEX_INITIALIZER),
       mPartnerLock(PTHREAD_MUTEX_INITIALIZER),
       mPartnerUp(false),
-      mUsbDataSessionMonitor(kUdcUeventRegex, kUdcStatePath, kHost1UeventRegex, kHost1StatePath,
-                             kHost2UeventRegex, kHost2StatePath, kDataRolePath,
-                             std::bind(&updatePortStatus, this)),
+      mUsbDataSessionMonitor(new UsbDataSessionMonitor(kUdcUeventRegex, kUdcStatePath,
+                             kHost1UeventRegex, kHost1StatePath, kHost2UeventRegex,
+                             kHost2StatePath, kDataRolePath, std::bind(&updatePortStatus, this))),
       mOverheat(ZoneInfo(TemperatureType::USB_PORT, kThermalZoneForTrip,
                          ThrottlingSeverity::CRITICAL),
                 {ZoneInfo(TemperatureType::UNKNOWN, kThermalZoneForTempReadPrimary,
@@ -1200,7 +1230,7 @@ void queryUsbDataSession(android::hardware::usb::Usb *usb,
                           std::vector<PortStatus> *currentPortStatus) {
     std::vector<ComplianceWarning> warnings;
 
-    usb->mUsbDataSessionMonitor.getComplianceWarnings(
+    usb->mUsbDataSessionMonitor->getComplianceWarnings(
         (*currentPortStatus)[0].currentDataRole, &warnings);
     (*currentPortStatus)[0].complianceWarnings.insert(
         (*currentPortStatus)[0].complianceWarnings.end(),
