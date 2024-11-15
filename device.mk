@@ -1303,6 +1303,10 @@ PRODUCT_COPY_FILES += \
 include device/google/gs-common/touch/twoshay/aidl_zuma.mk
 include device/google/gs-common/touch/twoshay/twoshay.mk
 
+ifeq ($(RELEASE_PIXEL_GIA_ENABLED),true)
+include device/google/gs-common/input/gia/gia.mk
+endif
+
 PRODUCT_CHECK_VENDOR_SEAPP_VIOLATIONS := true
 
 PRODUCT_CHECK_DEV_TYPE_VIOLATIONS := true
