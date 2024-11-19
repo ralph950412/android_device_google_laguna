@@ -294,6 +294,9 @@ include device/google/gs-common/modem/shared_modem_platform/shared_modem_platfor
 
 # Use for GRIL
 USES_LASSEN_MODEM := true
+ifneq ($(BOARD_WITHOUT_RADIO),true)
+$(call soong_config_set_bool,grilservice,use_google_qns,true)
+endif
 
 ifeq ($(USES_GOOGLE_DIALER_CARRIER_SETTINGS),true)
 USE_GOOGLE_DIALER := true
