@@ -201,6 +201,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	bluetooth.profile.ccp.server.enabled=true \
 	bluetooth.profile.vcp.controller.enabled=true
 
+# Override default HCI command timeout value for BT stack
+PRODUCT_PRODUCT_PROPERTIES += \
+    bluetooth.hci.timeout_milliseconds=5000
+
 # Carrier configuration default location
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.radio.config.carrier_config_dir=/vendor/firmware/carrierconfig
