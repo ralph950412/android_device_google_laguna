@@ -374,6 +374,14 @@ PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.vulkan=mali
 endif
 
+# SurfaceFlinger / RenderEngine
+ifeq ($(TARGET_USES_VULKAN),true)
+# b/293371537 Opt in to RE-Graphite's aconfig-based preview rollout
+PRODUCT_VENDOR_PROPERTIES += debug.renderengine.graphite_preview_optin=true
+else
+$(warning TARGET_USES_VULKAN == false, cannot opt in to RE-Graphite rollout in SurfaceFlinger)
+PRODUCT_VENDOR_PROPERTIES += debug.renderengine.graphite_preview_optin=false
+endif
 # b/295257834 Add HDR shaders to SurfaceFlinger's pre-warming cache
 PRODUCT_VENDOR_PROPERTIES += ro.surface_flinger.prime_shader_cache.ultrahdr=1
 
