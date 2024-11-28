@@ -539,6 +539,10 @@
     <string name="config_satellite_carrier_roaming_non_emergency_session_class">com.google.android.apps.stargate.sessionmanager.SessionManagerReceiver_Receiver</string>
 
     <!-- Whether to show the system notification to users whenever there is a change
-    in the satellite availability state at the current location. -->
+         in the satellite availability state at the current location. -->
     <bool name="config_satellite_should_notify_availability">false</bool>
+
+    <!-- Whether to allow check message datagrams to be sent even when the satellite modem is in
+         not connected state. -->
+    <bool name="config_satellite_allow_check_message_in_not_connected">true</bool>
 </resources>
