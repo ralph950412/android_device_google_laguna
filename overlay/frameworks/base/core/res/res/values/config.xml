@@ -562,4 +562,10 @@
 
     <!-- Whether to enable usb state update via udc sysfs. -->
     <bool name="config_enableUdcSysfsUsbStateUpdate">true</bool>
+
+    <!-- List of integer tag Ids representing VZW satellite coverage. -->
+    <integer-array name="config_verizon_satellite_enabled_tagids">
+        <item>1001</item>
+    </integer-array>
+
 </resources>
