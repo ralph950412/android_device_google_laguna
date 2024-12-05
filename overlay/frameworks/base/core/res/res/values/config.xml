@@ -548,4 +548,7 @@
     <!-- Whether to allow check message datagrams to be sent even when the satellite modem is in
          not connected state. -->
     <bool name="config_satellite_allow_check_message_in_not_connected">true</bool>
+
+    <!-- Whether to allow TN scanning during satellite session. -->
+    <bool name="config_satellite_allow_tn_scanning_during_satellite_session">false</bool>
 </resources>
