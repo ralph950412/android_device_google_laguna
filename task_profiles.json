@@ -519,6 +519,14 @@
     {
       "Name": "SCHED_QOS_SENSITIVE_STANDARD_CLEAR",
       "Profiles": [ "AdpfClear", "PreferIdleClear", "PreferFitClear" ]
+    },
+    {
+      "Name": "SCHED_QOS_POWER_EFFICIENCY_SET",
+      "Profiles": [ "AutoUclampMaxSet" ]
+    },
+    {
+      "Name": "SCHED_QOS_POWER_EFFICIENCY_CLEAR",
+      "Profiles": [ "AutoUclampMaxClear" ]
     }
   ]
 }
