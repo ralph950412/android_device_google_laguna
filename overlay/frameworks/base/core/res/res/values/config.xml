@@ -545,6 +545,9 @@
          in the satellite availability state at the current location. -->
     <bool name="config_satellite_should_notify_availability">false</bool>
 
+    <!-- The absolute path to the satellite config file. -->
+    <string name="satellite_access_config_file">/vendor/etc/telephony/satellite_access_config.json</string>
+
     <!-- Whether to allow check message datagrams to be sent even when the satellite modem is in
          not connected state. -->
     <bool name="config_satellite_allow_check_message_in_not_connected">true</bool>
