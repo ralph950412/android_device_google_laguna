@@ -295,7 +295,7 @@ BOARD_SEPOLICY_DIRS += hardware/google/pixel-sepolicy/logger_app
 endif # ifneq ($(BOARD_WITHOUT_RADIO),true)
 
 # Shared Modem Platform
-include device/google/gs-common/modem/shared_modem_platform/shared_modem_platform.mk
+include device/google/gs-common/modem/modem_svc_sit/shared_modem_platform.mk
 
 # Use for GRIL
 USES_LASSEN_MODEM := true
