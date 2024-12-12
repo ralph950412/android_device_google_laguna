@@ -554,4 +554,7 @@
 
     <!-- Whether to allow TN scanning during satellite session. -->
     <bool name="config_satellite_allow_tn_scanning_during_satellite_session">false</bool>
+
+    <!-- Whether to enable usb state update via udc sysfs. -->
+    <bool name="config_enableUdcSysfsUsbStateUpdate">true</bool>
 </resources>
