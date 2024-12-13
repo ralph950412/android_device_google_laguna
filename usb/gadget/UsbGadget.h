@@ -74,7 +74,7 @@ constexpr char kProcInterruptsPath[] = "/proc/interrupts";
 constexpr char kProcIrqPath[] = "/proc/irq/";
 constexpr char kSmpAffinityList[] = "/smp_affinity_list";
 #ifndef UDC_PATH
-#define UDC_PATH "/sys/class/udc/11210000.dwc3/"
+#define UDC_PATH "/sys/devices/platform/11210000.usb/11210000.dwc3/udc/11210000.dwc3/"
 #endif
 static MonitorFfs monitorFfs(kGadgetName);
 
@@ -115,6 +115,9 @@ struct UsbGadget : public BnUsbGadget {
 
     ScopedAStatus setVidPid(const char *vid,const char *pid);
 
+    // Indicates to the kernel that the gadget service is ready and the kernel can
+    // set SDP timeout to a lower value.
+    void updateSdpEnumTimeout();
     std::string mI2cClientPath;
 
   private:

@@ -27,12 +27,16 @@ on init
     write /proc/vendor_sched/groups/fg/prefer_idle 1
     write /proc/vendor_sched/groups/sys/uclamp_min 190
     write /proc/vendor_sched/groups/sys/prefer_idle 1
+    write /proc/vendor_sched/groups/fg_wi/prefer_idle 1
+    # Make sure little core don't go below 820MHz
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 820000
 
     write /proc/vendor_sched/groups/bg/rampup_multiplier 0
     write /proc/vendor_sched/groups/cam/rampup_multiplier 1
     write /proc/vendor_sched/groups/cam_power/rampup_multiplier 1
     write /proc/vendor_sched/groups/dex2oat/rampup_multiplier 0
     write /proc/vendor_sched/groups/fg/rampup_multiplier 0
+    write /proc/vendor_sched/groups/fg_wi/rampup_multiplier 1
     write /proc/vendor_sched/groups/nnapi/rampup_multiplier 0
     write /proc/vendor_sched/groups/ota/rampup_multiplier 0
     write /proc/vendor_sched/groups/rt/rampup_multiplier 0
@@ -41,6 +45,20 @@ on init
     write /proc/vendor_sched/groups/sys_bg/rampup_multiplier 0
     write /proc/vendor_sched/groups/ta/rampup_multiplier 1
     write /proc/vendor_sched/adpf_rampup_multiplier 2
+
+    write /proc/vendor_sched/groups/bg/disable_util_est 1
+    write /proc/vendor_sched/groups/cam/disable_util_est 0
+    write /proc/vendor_sched/groups/cam_power/disable_util_est 0
+    write /proc/vendor_sched/groups/dex2oat/disable_util_est 1
+    write /proc/vendor_sched/groups/fg/disable_util_est 1
+    write /proc/vendor_sched/groups/fg_wi/disable_util_est 0
+    write /proc/vendor_sched/groups/nnapi/disable_util_est 1
+    write /proc/vendor_sched/groups/ota/disable_util_est 1
+    write /proc/vendor_sched/groups/rt/disable_util_est 1
+    write /proc/vendor_sched/groups/sf/disable_util_est 0
+    write /proc/vendor_sched/groups/sys/disable_util_est 1
+    write /proc/vendor_sched/groups/sys_bg/disable_util_est 1
+    write /proc/vendor_sched/groups/ta/disable_util_est 0
 
     # governor setting
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor sched_pixel
@@ -115,6 +133,16 @@ on init
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu6_memlat@17000010/mem_latency/stall_floor 2400
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu7_memlat@17000010/mem_latency/stall_floor 500
 
+    # Prefer Asymmetric MTE mode when enabled
+    write /sys/devices/system/cpu/cpu0/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu1/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu2/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu3/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu4/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu5/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu6/mte_tcf_preferred asymm
+    write /sys/devices/system/cpu/cpu7/mte_tcf_preferred asymm
+
 on zygote-start
     # For PixelLogger configuration file.
     chmod 0771 /data/vendor/wifi
@@ -140,6 +168,7 @@ on zygote-start
     write /proc/vendor_sched/groups/dex2oat/ug 1
     write /proc/vendor_sched/groups/ta/ug 2
     write /proc/vendor_sched/groups/fg/ug 2
+    write /proc/vendor_sched/groups/fg_wi/ug 2
     write /proc/vendor_sched/groups/nnapi/ug 2
     write /proc/vendor_sched/groups/rt/ug 2
     write /proc/vendor_sched/groups/sf/ug 2
@@ -163,11 +192,12 @@ on property:sys.boot_completed=1
     # Set kswapd affinity
     write /sys/kernel/vendor_mm/kswapd_cpu_affinity 7f
     write /sys/kernel/vendor_mm/pa_kill/cpu_affinity 7f
+    write /sys/kernel/vendor_mm/kcompactd_cpu_affinity 7f
 
     # Restore prefer idle
-    write /proc/vendor_sched/groups/ta/preferred_idle_mask_low 0xff
-    write /proc/vendor_sched/groups/ta/preferred_idle_mask_mid 0xff
-    write /proc/vendor_sched/groups/ta/preferred_idle_mask_high 0xff
+    write /proc/vendor_sched/groups/ta/preferred_idle_mask_low 0x7f
+    write /proc/vendor_sched/groups/ta/preferred_idle_mask_mid 0x7f
+    write /proc/vendor_sched/groups/ta/preferred_idle_mask_high 0x7f
     write /proc/vendor_sched/groups/fg/preferred_idle_mask_low 0xff
     write /proc/vendor_sched/groups/fg/preferred_idle_mask_mid 0xff
     write /proc/vendor_sched/groups/fg/preferred_idle_mask_high 0xff
@@ -178,6 +208,7 @@ on property:sys.boot_completed=1
     # Setup final cpuset
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-6
+    write /dev/cpuset/foreground_window/cpus 0-6
     write /dev/cpuset/background/cpus 0-3
     write /dev/cpuset/system-background/cpus 0-3
     write /dev/cpuset/restricted/cpus 0-3
@@ -198,6 +229,13 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpufreq/policy4/sched_pixel/pmu_limit_enable 1
     write /sys/devices/system/cpu/cpufreq/policy7/sched_pixel/pmu_limit_enable 1
     write /proc/vendor_sched/pmu_poll_enable 0
+
+    # Set priority task name and boost value
+    write /proc/vendor_sched/priority_task_name "ExoPlayer:Place"
+    write /proc/vendor_sched/priority_task_boost_value 742
+
+    # To be removed after InputDispatche and InputReader become ADPF
+    write /proc/vendor_sched/prefer_idle_task_name "InputDispatcher,InputReader"
 
 # MTE
 on property:persist.device_config.runtime_native_boot.mode_override=sync

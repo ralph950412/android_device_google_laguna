@@ -80,9 +80,9 @@ PRODUCT_SOONG_NAMESPACES += \
 	device/google/zumapro \
 	device/google/zumapro/powerstats \
 	vendor/google_devices/common/chre/host/hal \
+	vendor/google_devices/zumapro/proprietary/debugpolicy \
 	vendor/google/whitechapel/tools \
 	vendor/google/interfaces \
-	vendor/google_devices/common/proprietary/confirmatioui_hal \
 	vendor/google_nos/host/android \
 	vendor/google_nos/test/system-test-harness \
 	vendor/google/camera
@@ -97,8 +97,10 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 	ro.oem_unlock_supported=1
 
 # Include vendor telephony soong namespace
+ifneq ($(BOARD_WITHOUT_RADIO), true)
 PRODUCT_SOONG_NAMESPACES += \
 	vendor/samsung_slsi/telephony/$(BOARD_USES_SHARED_VENDOR_TELEPHONY)
+endif
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 #Set IKE logs to verbose for WFC
@@ -215,13 +217,18 @@ PRODUCT_PROPERTY_OVERRIDES += \
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \
-	persist.sys.hdcp_checking=always
+	persist.sys.hdcp_checking=drm-only
 
 USE_LASSEN_OEMHOOK := true
+
+# Pixel Logger
+include hardware/google/pixel/PixelLogger/PixelLogger.mk
+
 ifneq ($(BOARD_WITHOUT_RADIO),true)
 # The "power-anomaly-sitril" is added into PRODUCT_SOONG_NAMESPACES when
 # $(USE_LASSEN_OEMHOOK) is true and $(BOARD_WITHOUT_RADIO) is not true.
 PRODUCT_SOONG_NAMESPACES += vendor/google/tools/power-anomaly-sitril
+$(call soong_config_set,sitril,use_lassen_oemhook_with_radio,true)
 
 $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHARED_VENDOR_TELEPHONY)/common/device-vendor.mk)
 
@@ -272,9 +279,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.modem.extensive_logging_enabled=false
 
-# Pixel Logger
-include hardware/google/pixel/PixelLogger/PixelLogger.mk
-
 # Use Lassen specifc Shared Modem Platform
 SHARED_MODEM_PLATFORM_VENDOR := lassen
 
@@ -290,13 +294,14 @@ include device/google/gs-common/modem/shared_modem_platform/shared_modem_platfor
 
 # Use for GRIL
 USES_LASSEN_MODEM := true
-USE_WHI_GRIL_RECOVERY := true
 
 ifeq ($(USES_GOOGLE_DIALER_CARRIER_SETTINGS),true)
 USE_GOOGLE_DIALER := true
 USE_GOOGLE_CARRIER_SETTINGS := true
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.uses_google_dialer_carrier_settings=1
+# GoogleDialer in PDK build with "USES_GOOGLE_DIALER_CARRIER_SETTINGS=true"
+PRODUCT_SOONG_NAMESPACES += vendor/google_devices/zumapro/proprietary/GoogleDialer
 endif
 
 ifeq ($(USES_GOOGLE_PREBUILT_MODEM_SVC),true)
@@ -320,8 +325,14 @@ else
 TARGET_USES_VULKAN = true
 endif
 
+# "vendor/arm" doesn't exist in PDK build
+ifeq (,$(realpath $(TOPDIR)vendor/arm/mali/valhall/Android.bp))
+PRODUCT_SOONG_NAMESPACES += \
+	vendor/google_devices/zumapro/prebuilts/gpu
+else
 PRODUCT_SOONG_NAMESPACES += \
 	vendor/arm/mali/valhall
+endif
 
 $(call soong_config_set,pixel_mali,soc,$(TARGET_BOARD_PLATFORM))
 # TODO (b/297408842): The gralloc is being open-sourced, and we cannot pass
@@ -334,8 +345,17 @@ PRODUCT_PACKAGES += \
 	csffw_image_prebuilt__firmware_prebuilt_ttux_mali_csffw.bin \
 	libGLES_mali \
 	vulkan.mali \
-	libOpenCL \
 	libgpudataproducer
+
+# Install the OpenCL ICD Loader
+PRODUCT_SOONG_NAMESPACES += external/OpenCL-ICD-Loader
+PRODUCT_PACKAGES += \
+	libOpenCL \
+	mali_icd__customer_pixel_opencl-icd_ARM.icd
+ifeq ($(DEVICE_IS_64BIT_ONLY),false)
+PRODUCT_PACKAGES += \
+	mali_icd__customer_pixel_opencl-icd_ARM32.icd
+endif
 
 ifeq ($(USE_SWIFTSHADER),true)
 $(warning USE_SWIFTSHADER set to current target)
@@ -358,11 +378,10 @@ endif
 PRODUCT_VENDOR_PROPERTIES += ro.surface_flinger.prime_shader_cache.ultrahdr=1
 
 # Mali Configuration Properties
-# b/221255664 prevents setting PROTECTED_MAX_CORE_COUNT=2
 PRODUCT_VENDOR_PROPERTIES += \
 	vendor.mali.platform.config=/vendor/etc/mali/platform.config \
 	vendor.mali.debug.config=/vendor/etc/mali/debug.config \
-	vendor.mali.base_protected_max_core_count=1 \
+	vendor.mali.base_protected_max_core_count=4 \
 	vendor.mali.base_protected_tls_max=67108864 \
 	vendor.mali.platform_agt_frequency_khz=24576
 
@@ -388,10 +407,13 @@ PRODUCT_VENDOR_PROPERTIES += \
 # GRAPHICS - GPU (end)
 # ####################
 
+PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
+
 # Device Manifest, Device Compatibility Matrix for Treble
 DEVICE_MANIFEST_FILE := \
 	device/google/zumapro/manifest.xml
 
+BOARD_USE_CODEC2_AIDL := V1
 ifneq (,$(filter aosp_%,$(TARGET_PRODUCT)))
 DEVICE_MANIFEST_FILE += \
 	device/google/zumapro/manifest_media_aosp.xml
@@ -412,8 +434,6 @@ DEVICE_MATRIX_FILE := \
 
 DEVICE_PACKAGE_OVERLAYS += device/google/zumapro/overlay
 
-PRODUCT_SHIPPING_API_LEVEL := 34
-
 # RKP VINTF
 -include vendor/google_nos/host/android/hals/keymaster/aidl/strongbox/RemotelyProvisionedComponent-citadel.mk
 
@@ -430,7 +450,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.zumapro.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.soc.rc \
 	device/google/zumapro/conf/init.zuma.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zuma.soc.rc \
-	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc
+	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc \
+	device/google/zumapro/conf/init.efs.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_COPY_FILES += \
@@ -445,6 +466,17 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.zuma.rc
 
 # Fstab files
+ifeq (true,$(TARGET_BOOTS_16K))
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/fs-16kb
+else ifeq (ext4,$(TARGET_RW_FILE_SYSTEM_TYPE))
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/ext4
+else
+PRODUCT_SOONG_NAMESPACES += \
+        device/google/zumapro/conf/f2fs
+endif
+
 PRODUCT_PACKAGES += \
 	fstab.zuma \
 	fstab.zumapro \
@@ -456,8 +488,9 @@ PRODUCT_PACKAGES += \
 	fstab.zumapro-fips.vendor_ramdisk
 
 PRODUCT_COPY_FILES += \
-	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
-	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.modem:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.modem
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.ro.modem:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.modem \
+	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.efs:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.efs
 
 # Shell scripts
 PRODUCT_PACKAGES += \
@@ -498,8 +531,6 @@ PRODUCT_COPY_FILES += \
 
 ## Enable the CHRE Daemon
 CHRE_USF_DAEMON_ENABLED := false
-PRODUCT_PACKAGES += \
-	preloaded_nanoapps.json
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
@@ -556,15 +587,21 @@ PRODUCT_COPY_FILES += \
 # Sensors
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
-	frameworks/native/data/etc/android.hardware.sensor.barometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.barometer.xml \
 	frameworks/native/data/etc/android.hardware.sensor.compass.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.compass.xml \
 	frameworks/native/data/etc/android.hardware.sensor.dynamic.head_tracker.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.dynamic.head_tracker.xml \
 	frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.gyroscope.xml \
-	frameworks/native/data/etc/android.hardware.sensor.hifi_sensors.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.hifi_sensors.xml \
 	frameworks/native/data/etc/android.hardware.sensor.light.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.light.xml\
-	frameworks/native/data/etc/android.hardware.sensor.proximity.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.proximity.xml \
 	frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepcounter.xml \
 	frameworks/native/data/etc/android.hardware.sensor.stepdetector.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepdetector.xml
+ifneq ($(DISABLE_SENSOR_BARO_HIFI),true)
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.sensor.barometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.barometer.xml \
+	frameworks/native/data/etc/android.hardware.sensor.hifi_sensors.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.hifi_sensors.xml
+endif
+ifneq ($(DISABLE_SENSOR_PROX),true)
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.sensor.proximity.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.proximity.xml
+endif
 
 # Add sensor HAL AIDL product packages
 PRODUCT_PACKAGES += android.hardware.sensors-service.multihal
@@ -619,6 +656,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += aaudio.mmap_policy=2
 PRODUCT_PROPERTY_OVERRIDES += aaudio.mmap_exclusive_policy=2
 PRODUCT_PROPERTY_OVERRIDES += aaudio.hw_burst_min_usec=2000
+
+# Set util_clamp_min for s/w spatializer
+PRODUCT_PROPERTY_OVERRIDES += audio.spatializer.effect.util_clamp_min=300
 
 # Calliope firmware overwrite
 #PRODUCT_COPY_FILES += \
@@ -739,11 +779,18 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.accessory.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.accessory.xml
 
 PRODUCT_COPY_FILES += \
-	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml \
 	frameworks/native/data/etc/android.hardware.camera.front.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.front.xml \
 	frameworks/native/data/etc/android.hardware.camera.concurrent.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.concurrent.xml \
 	frameworks/native/data/etc/android.hardware.camera.full.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.full.xml\
 	frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml\
+
+ifneq ($(DISABLE_CAMERA_FS),true)
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml
+else
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.camera.autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.autofocus.xml
+endif
 
 #PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
@@ -814,8 +861,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += vendor.display.1.brightness.dimming.usage?
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.sys.sf.native_mode=2
-PRODUCT_COPY_FILES += \
-	device/google/zumapro/display/display_colordata_cal0.pb:$(TARGET_COPY_OUT_VENDOR)/etc/display_colordata_cal0.pb
 
 # limit DPP downscale ratio
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += vendor.hwc.dpp.downscale=4
@@ -867,11 +912,18 @@ PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
 
 PRODUCT_PROPERTY_OVERRIDES += \
-       debug.stagefright.c2-poolmask=458752 \
        debug.c2.use_dmabufheaps=1 \
        media.c2.dmabuf.padding=512 \
        debug.stagefright.ccodec_delayed_params=1 \
        ro.vendor.gpu.dataspace=1
+
+ifneq ($(BOARD_USE_CODEC2_AIDL), )
+PRODUCT_PROPERTY_OVERRIDES += \
+        debug.stagefright.c2-poolmask=1507328
+else
+PRODUCT_PROPERTY_OVERRIDES += \
+        debug.stagefright.c2-poolmask=458752
+endif
 
 # Create input surface on the framework side
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -916,9 +968,6 @@ PRODUCT_PACKAGES_DEBUG += \
     trusty-ut-ctrl \
     tipc-test \
     trusty_stats_test \
-
-# Remove confirmation UI (b/316160738)
-# include device/google/gs101/confirmationui/confirmationui.mk
 
 # Trusty Metrics Daemon
 PRODUCT_SOONG_NAMESPACES += \
@@ -967,7 +1016,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	ro.postinstall.fstab.prefix=/product
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/fstab.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
+	device/google/zumapro/conf/fstab.ro.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
 
 # fastbootd
 PRODUCT_PACKAGES += \
@@ -1015,6 +1064,8 @@ SUPPORT_NR_DS := true
 USE_RADIO_HAL_2_1 := true
 # Using Early Send Device Info
 USE_EARLY_SEND_DEVICE_INFO := true
+# Using New Radio Access Format to modem
+USE_NEW_RADIO_ACCESS_SPECIFIER_FORMAT := true
 
 #$(call inherit-product, vendor/google_devices/telephony/common/device-vendor.mk)
 #$(call inherit-product, vendor/google_devices/zumapro/proprietary/device-vendor.mk)
@@ -1045,6 +1096,9 @@ PRODUCT_PACKAGES += \
 	android.hardware.health-service.zumapro_recovery \
 
 # Audio
+# Audio Vendor Prebuilt
+$(call soong_config_set,aoc_spk_post_processing,prebuilts_dir,$(RELEASE_GOOGLE_SPKPOSTPROCESSING_ZUMAPRO_DIR))
+
 # Audio HAL Server & Default Implementations
 ifeq ($(USE_AUDIO_HAL_AIDL),true)
 include device/google/gs-common/audio/aidl.mk
@@ -1237,3 +1291,5 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # since it can't be overridden from /vendor.
 PRODUCT_PRODUCT_PROPERTIES += \
 	dumpstate.strict_run=false
+
+PRODUCT_NO_BIONIC_PAGE_SIZE_MACRO := true
