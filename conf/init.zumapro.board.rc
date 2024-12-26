@@ -627,6 +627,14 @@ on property:vendor.thermal.link_ready=1
     chown system system /dev/thermal/cdev-by-name/thermal-uclamp-4/cur_state
     chown system system /dev/thermal/cdev-by-name/thermal-uclamp-7/cur_state
 
+on property:vendor.thermal.link_ready=1 && property:vendor.pixel.system.phenotype.Thermal__shutdown_exp_enabled=true
+    setprop vendor.thermal.config "thermal_info_config_lpm.json"
+    restart vendor.thermal-hal
+
+on property:vendor.thermal.link_ready=1 && property:vendor.pixel.system.phenotype.Thermal__shutdown_exp_enabled=false
+    setprop vendor.thermal.config "thermal_info_config.json"
+    restart vendor.thermal-hal
+
 on charger
     # Use charger thermal config
     setprop vendor.thermal.config "thermal_info_config_charge.json"
