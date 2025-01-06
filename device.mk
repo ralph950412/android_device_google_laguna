@@ -31,7 +31,7 @@ include device/google/gs-common/pixel_metrics/pixel_metrics.mk
 include device/google/gs-common/soc/freq.mk
 include device/google/gs-common/gps/dump/log.mk
 include device/google/gs-common/bcmbt/dump/dumplog.mk
-include device/google/gs-common/display/dump.mk
+include device/google/gs-common/display/dump_exynos_display.mk
 include device/google/gs-common/display_logbuffer/dump.mk
 include device/google/gs-common/gxp/gxp.mk
 include device/google/gs-common/camera/dump.mk
@@ -75,6 +75,7 @@ PRODUCT_SOONG_NAMESPACES += \
 	hardware/google/gchips/gralloc4 \
 	hardware/google/graphics/common \
 	hardware/google/graphics/zuma \
+	hardware/google/graphics/zumapro/libhwc2.1 \
 	hardware/google/interfaces \
 	hardware/google/pixel \
 	device/google/zumapro \
@@ -176,30 +177,34 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # MAJOR_CLASS: 0x42 -> 66 (Phone)
 # MINOR_CLASS: 0x0C -> 12 (Smart Phone)
 PRODUCT_PRODUCT_PROPERTIES += \
-    bluetooth.device.class_of_device=90,66,12
+    bluetooth.device.class_of_device?=90,66,12
 
 # Set supported Bluetooth profiles to enabled
 PRODUCT_PRODUCT_PROPERTIES += \
-	bluetooth.profile.asha.central.enabled=true \
-	bluetooth.profile.a2dp.source.enabled=true \
-	bluetooth.profile.avrcp.target.enabled=true \
-	bluetooth.profile.bap.unicast.client.enabled=true \
-	bluetooth.profile.bas.client.enabled=true \
-	bluetooth.profile.csip.set_coordinator.enabled=true \
-	bluetooth.profile.gatt.enabled=true \
-	bluetooth.profile.hap.client.enabled=true \
-	bluetooth.profile.hfp.ag.enabled=true \
-	bluetooth.profile.hid.device.enabled=true \
-	bluetooth.profile.hid.host.enabled=true \
-	bluetooth.profile.map.server.enabled=true \
-	bluetooth.profile.mcp.server.enabled=true \
-	bluetooth.profile.opp.enabled=true \
-	bluetooth.profile.pan.nap.enabled=true \
-	bluetooth.profile.pan.panu.enabled=true \
-	bluetooth.profile.pbap.server.enabled=true \
-	bluetooth.profile.sap.server.enabled=true \
-	bluetooth.profile.ccp.server.enabled=true \
-	bluetooth.profile.vcp.controller.enabled=true
+	bluetooth.profile.asha.central.enabled?=true \
+	bluetooth.profile.a2dp.source.enabled?=true \
+	bluetooth.profile.avrcp.target.enabled?=true \
+	bluetooth.profile.bap.unicast.client.enabled?=true \
+	bluetooth.profile.bas.client.enabled?=true \
+	bluetooth.profile.csip.set_coordinator.enabled?=true \
+	bluetooth.profile.gatt.enabled?=true \
+	bluetooth.profile.hap.client.enabled?=true \
+	bluetooth.profile.hfp.ag.enabled?=true \
+	bluetooth.profile.hid.device.enabled?=true \
+	bluetooth.profile.hid.host.enabled?=true \
+	bluetooth.profile.map.server.enabled?=true \
+	bluetooth.profile.mcp.server.enabled?=true \
+	bluetooth.profile.opp.enabled?=true \
+	bluetooth.profile.pan.nap.enabled?=true \
+	bluetooth.profile.pan.panu.enabled?=true \
+	bluetooth.profile.pbap.server.enabled?=true \
+	bluetooth.profile.sap.server.enabled?=true \
+	bluetooth.profile.ccp.server.enabled?=true \
+	bluetooth.profile.vcp.controller.enabled?=true
+
+# Override default HCI command timeout value for BT stack
+PRODUCT_PRODUCT_PROPERTIES += \
+    bluetooth.hci.timeout_milliseconds=5000
 
 # Carrier configuration default location
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -290,10 +295,13 @@ BOARD_SEPOLICY_DIRS += hardware/google/pixel-sepolicy/logger_app
 endif # ifneq ($(BOARD_WITHOUT_RADIO),true)
 
 # Shared Modem Platform
-include device/google/gs-common/modem/shared_modem_platform/shared_modem_platform.mk
+include device/google/gs-common/modem/modem_svc_sit/shared_modem_platform.mk
 
 # Use for GRIL
 USES_LASSEN_MODEM := true
+ifneq ($(BOARD_WITHOUT_RADIO),true)
+$(call soong_config_set_bool,grilservice,use_google_qns,true)
+endif
 
 ifeq ($(USES_GOOGLE_DIALER_CARRIER_SETTINGS),true)
 USE_GOOGLE_DIALER := true
@@ -374,6 +382,14 @@ PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.vulkan=mali
 endif
 
+# SurfaceFlinger / RenderEngine
+ifeq ($(TARGET_USES_VULKAN),true)
+# b/293371537 Opt in to RE-Graphite's aconfig-based preview rollout
+PRODUCT_VENDOR_PROPERTIES += debug.renderengine.graphite_preview_optin=true
+else
+$(warning TARGET_USES_VULKAN == false, cannot opt in to RE-Graphite rollout in SurfaceFlinger)
+PRODUCT_VENDOR_PROPERTIES += debug.renderengine.graphite_preview_optin=false
+endif
 # b/295257834 Add HDR shaders to SurfaceFlinger's pre-warming cache
 PRODUCT_VENDOR_PROPERTIES += ro.surface_flinger.prime_shader_cache.ultrahdr=1
 
@@ -613,6 +629,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
 
+ifneq (,$(filter ripcurrentpro, $(TARGET_PRODUCT)))
+	include device/google/gs-common/touch/gti/gti.mk
+endif
+
 # Sensors
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
@@ -802,6 +822,12 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.wifi.aware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.aware.xml \
 	frameworks/native/data/etc/android.hardware.wifi.passpoint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.passpoint.xml \
 	frameworks/native/data/etc/android.hardware.wifi.rtt.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.rtt.xml
+
+# Bluetooth channel sounding
+ifneq (,$(RELEASE_RANGING_STACK))
+PRODUCT_COPY_FILES += \
+        frameworks/native/data/etc/android.hardware.bluetooth_le.channel_sounding.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.bluetooth_le.channel_sounding.xml
+endif
 
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.host.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.host.xml \
@@ -1229,6 +1255,10 @@ PRODUCT_PACKAGES += \
 # pKVM
 $(call inherit-product, packages/modules/Virtualization/apex/product_packages.mk)
 PRODUCT_BUILD_PVMFW_IMAGE := true
+ifeq ($(RELEASE_AVF_ENABLE_LLPVM_CHANGES),true)
+	# Set the environment variable to enable the Secretkeeper HAL service.
+	SECRETKEEPER_ENABLED := true
+endif
 
 # Enable to build standalone vendor_kernel_boot image.
 PRODUCT_BUILD_VENDOR_KERNEL_BOOT_IMAGE := true
@@ -1289,11 +1319,16 @@ endif
 
 # Telephony satellite geofence data file
 PRODUCT_COPY_FILES += \
-        device/google/zumapro/telephony/sats2.dat:$(TARGET_COPY_OUT_VENDOR)/etc/telephony/sats2.dat
+        device/google/zumapro/telephony/sats2.dat:$(TARGET_COPY_OUT_VENDOR)/etc/telephony/sats2.dat \
+        device/google/zumapro/telephony/satellite_access_config.json:$(TARGET_COPY_OUT_VENDOR)/etc/telephony/satellite_access_config.json
 
 # Touch service
 include device/google/gs-common/touch/twoshay/aidl_zuma.mk
 include device/google/gs-common/touch/twoshay/twoshay.mk
+
+ifeq ($(RELEASE_PIXEL_GIA_ENABLED),true)
+include device/google/gs-common/input/gia/gia.mk
+endif
 
 PRODUCT_CHECK_VENDOR_SEAPP_VIOLATIONS := true
 

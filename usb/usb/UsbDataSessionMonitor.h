@@ -64,6 +64,8 @@ class UsbDataSessionMonitor {
 
   private:
     struct usbDeviceState {
+        // The name of the usb device, e.g. udc, host1, host2.
+        std::string name;
         unique_fd fd;
         std::string filePath;
         std::string ueventRegex;
@@ -86,6 +88,8 @@ class UsbDataSessionMonitor {
     void updateUdcBindStatus(const std::string &devname);
 
     pthread_t mMonitor;
+    unique_fd mPipefd0;
+    unique_fd mPipefd1;
     unique_fd mEpollFd;
     unique_fd mUeventFd;
     unique_fd mTimerFd;

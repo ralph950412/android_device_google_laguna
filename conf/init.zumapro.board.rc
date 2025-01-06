@@ -21,72 +21,6 @@ on init
     # Boot time fs tuning
     write /sys/block/sda/queue/scheduler mq-deadline
 
-    chown system system /proc/vendor_sched/groups/bg/set_task_group
-    chown system system /proc/vendor_sched/groups/cam/set_task_group
-    chown system system /proc/vendor_sched/groups/fg/set_task_group
-    chown system system /proc/vendor_sched/groups/nnapi/set_task_group
-    chown system system /proc/vendor_sched/groups/sys/set_task_group
-    chown system system /proc/vendor_sched/groups/sys_bg/set_task_group
-    chown system system /proc/vendor_sched/groups/ta/set_task_group
-    chown system system /proc/vendor_sched/groups/rt/set_task_group
-    chown system system /proc/vendor_sched/groups/sf/set_task_group
-    chown system system /proc/vendor_sched/groups/dex2oat/set_task_group
-    chown system system /proc/vendor_sched/groups/cam_power/set_task_group
-    chown system system /proc/vendor_sched/groups/ota/set_task_group
-    chown system system /proc/vendor_sched/groups/fg_wi/set_task_group
-    chown system system /proc/vendor_sched/groups/bg/set_proc_group
-    chown system system /proc/vendor_sched/groups/cam/set_proc_group
-    chown system system /proc/vendor_sched/groups/fg/set_proc_group
-    chown system system /proc/vendor_sched/groups/nnapi/set_proc_group
-    chown system system /proc/vendor_sched/groups/sys/set_proc_group
-    chown system system /proc/vendor_sched/groups/sys_bg/set_proc_group
-    chown system system /proc/vendor_sched/groups/ta/set_proc_group
-    chown system system /proc/vendor_sched/groups/rt/set_proc_group
-    chown system system /proc/vendor_sched/groups/sf/set_proc_group
-    chown system system /proc/vendor_sched/groups/dex2oat/set_proc_group
-    chown system system /proc/vendor_sched/groups/cam_power/set_proc_group
-    chown system system /proc/vendor_sched/groups/ota/set_proc_group
-    chown system system /proc/vendor_sched/groups/fg_wi/set_proc_group
-    chown system system /proc/vendor_sched/prefer_idle_set
-    chown system system /proc/vendor_sched/prefer_idle_clear
-    chown system system /proc/vendor_sched/pmu_poll_enable
-    chown system system /proc/vendor_sched/pmu_poll_time
-    chown system system /proc/vendor_sched/uclamp_fork_reset_clear
-    chown system system /proc/vendor_sched/uclamp_fork_reset_set
-
-    chmod 0220 /proc/vendor_sched/groups/bg/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/cam/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/fg/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/nnapi/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/sys/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/sys_bg/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/ta/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/rt/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/sf/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/dex2oat/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/cam_power/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/ota/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/fg_wi/set_task_group
-    chmod 0220 /proc/vendor_sched/groups/bg/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/cam/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/fg/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/nnapi/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/sys/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/sys_bg/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/ta/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/rt/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/sf/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/dex2oat/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/cam_power/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/ota/set_proc_group
-    chmod 0220 /proc/vendor_sched/groups/fg_wi/set_proc_group
-    chmod 0220 /proc/vendor_sched/prefer_idle_set
-    chmod 0220 /proc/vendor_sched/prefer_idle_clear
-    chmod 0660 /proc/vendor_sched/pmu_poll_enable
-    chmod 0220 /proc/vendor_sched/pmu_poll_time
-    chmod 0220 /proc/vendor_sched/uclamp_fork_reset_clear
-    chmod 0220 /proc/vendor_sched/uclamp_fork_reset_set
-
     start vendor.keymaster-4-0
 
     # ZRAM setup
@@ -389,8 +323,8 @@ on fs
     chown system system /sys/devices/platform/exynos-drm/primary-panel/te2_option
     chown system system /sys/devices/platform/exynos-drm/primary-panel/power_state
     chown system system /sys/devices/platform/exynos-drm/primary-panel/frame_rate
-    chown system system /sys/devices/platform/exynos-drm/primary-panel/frame_interval
-    chown system system /sys/devices/platform/exynos-drm/primary-panel/expected_present_time
+    chown system system /sys/devices/platform/exynos-drm/primary-panel/frame_interval_ns
+    chown system system /sys/devices/platform/exynos-drm/primary-panel/expected_present_time_ns
     chown system system /sys/module/drm/parameters/vblankoffdelay
     chown system system /sys/module/drm/parameters/debug
     chown system system /sys/class/dqe0/atc/ambient_light
@@ -639,6 +573,7 @@ on post-fs-data
     chown bluetooth system /proc/bluetooth/sleep/btwake
     chown bluetooth system /proc/bluetooth/sleep/lpm
     chown bluetooth system /proc/bluetooth/sleep/btwrite
+    chown bluetooth system /sys/devices/platform/155d0000.serial/uart_dbg
     mkdir /data/vendor/bluetooth 0770 bluetooth system
 
 # ODPM
@@ -744,6 +679,7 @@ on property:vendor.all.modules.ready=1
     chown system system /sys/bus/i2c/devices/9-0043/default/braking_time_ms
     chown system system /sys/bus/i2c/devices/9-0043/default/f0_offset
     chown system system /sys/bus/i2c/devices/9-0043/default/owt_free_space
+    chown system system /sys/bus/i2c/devices/9-0043/default/owt_lib_compat
     chown system system /sys/bus/i2c/devices/9-0043/default/f0_comp_enable
     chown system system /sys/bus/i2c/devices/9-0043/default/redc_comp_enable
     chown system system /sys/bus/i2c/devices/9-0043/default/delay_before_stop_playback_us

@@ -34,14 +34,11 @@ on init
     # governor setting
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor sched_pixel
     write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/down_rate_limit_us 5000
     write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/down_rate_limit_scale_pow 2
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor sched_pixel
     write /sys/devices/system/cpu/cpu4/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu4/cpufreq/sched_pixel/down_rate_limit_us 20000
     write /sys/devices/system/cpu/cpu8/cpufreq/scaling_governor sched_pixel
     write /sys/devices/system/cpu/cpu8/cpufreq/sched_pixel/up_rate_limit_us 500
-    write /sys/devices/system/cpu/cpu8/cpufreq/sched_pixel/down_rate_limit_us 20000
 
     # memlat cpuidle awareness setting
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu0_memlat@17000010/memlat_cpuidle_state_aware 2
@@ -106,6 +103,11 @@ on init
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu6_memlat@17000010/mem_latency/stall_floor 2400
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu7_memlat@17000010/mem_latency/stall_floor 2400
     write /sys/class/devfreq/gs_memlat_devfreq:devfreq_mif_cpu8_memlat@17000010/mem_latency/stall_floor 500
+
+on late-init
+    write /sys/devices/system/cpu/cpu0/cpufreq/sched_pixel/down_rate_limit_us 5000
+    write /sys/devices/system/cpu/cpu4/cpufreq/sched_pixel/down_rate_limit_us 20000
+    write /sys/devices/system/cpu/cpu8/cpufreq/sched_pixel/down_rate_limit_us 20000
 
 on zygote-start
     # For PixelLogger configuration file.

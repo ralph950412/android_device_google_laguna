@@ -126,7 +126,8 @@ struct Usb : public BnUsb {
     bool mPartnerUp;
 
     // Report usb data session event and data incompliance warnings
-    UsbDataSessionMonitor mUsbDataSessionMonitor;
+    std::unique_ptr<UsbDataSessionMonitor> mUsbDataSessionMonitor;
+    bool mIntHubEnabled;
     // Usb Overheat object for push suez event
     UsbOverheatEvent mOverheat;
     // Temperature when connected
