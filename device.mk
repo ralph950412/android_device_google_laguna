@@ -874,10 +874,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	debug.sf.enable_sdr_dimming=1 \
         debug.sf.dim_in_gamma_in_enhanced_screenshots=1
 
-# Camera
-PRODUCT_PROPERTY_OVERRIDES += \
-	vendor.camera.multicam.enable_p23_multicam=true
-
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += debug.sf.use_phase_offsets_as_durations=1
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += debug.sf.late.sf.duration=10500000
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += debug.sf.late.app.duration=16600000
