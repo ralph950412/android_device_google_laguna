@@ -154,7 +154,9 @@ const struct SysfsCollector::SysfsPaths sysfs_paths = {
 const struct UeventListener::UeventPaths ueventPaths = {
         .AudioUevent = "/devices/virtual/amcs/amcs",
         .TypeCPartnerUevent = "PRODUCT_TYPE=",
-        .FwUpdatePath = "/sys/devices/platform/maxim,max77779fwu/update_stats",
+        .FwUpdatePath = {
+	    "/dev/logbuffer_max77779_fwupdate",
+        },
         .FGAbnlPath = {
             "/dev/logbuffer_max77779fg_monitor",
             "/dev/logbuffer_maxfg_base_monitor",
