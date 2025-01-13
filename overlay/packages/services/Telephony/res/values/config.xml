@@ -31,4 +31,7 @@
 
     <!-- String indicating the package name of the device GbaService implementation. -->
     <string name="config_gba_package" translatable="false">com.shannon.rcsservice</string>
+
+    <!-- Whether to turn off non-emergency nb iot ntn satellite for emergency call -->
+    <bool name="config_turn_off_non_emergency_nb_iot_ntn_satellite_for_emergency_call">false</bool>
 </resources>
