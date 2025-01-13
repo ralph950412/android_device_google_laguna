@@ -314,6 +314,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.uses_google_dialer_carrier_settings=1
 # GoogleDialer in PDK build with "USES_GOOGLE_DIALER_CARRIER_SETTINGS=true"
 PRODUCT_SOONG_NAMESPACES += vendor/google_devices/zumapro/proprietary/GoogleDialer
+
+# Use prebuilt PixelImsMediaFramework.jar for PDK build
+PRODUCT_SOONG_NAMESPACES += vendor/google_devices/gs-common/prebuilts/ImsMedia
 endif
 
 ifeq ($(USES_GOOGLE_PREBUILT_MODEM_SVC),true)
