@@ -172,10 +172,11 @@
             <Limit name="measured-frame-rate-1280x720" range="86-185" />
          </MediaCodec>
         <MediaCodec name="c2.android.av1-dav1d.decoder" type="video/av01" update="true">
-            <Limit name="measured-frame-rate-352x288" range="689-881" />
-            <Limit name="measured-frame-rate-640x360" range="763-845" />
-            <Limit name="measured-frame-rate-720x480" range="727-746" />
-            <Limit name="measured-frame-rate-1280x720" range="348-358" />
+            <!-- b/388044420 -->
+            <Limit name="measured-frame-rate-352x288" range="315-526" />
+            <Limit name="measured-frame-rate-640x360" range="271-485" />
+            <Limit name="measured-frame-rate-720x480" range="210-369" />
+            <Limit name="measured-frame-rate-1280x720" range="195-322" />
          </MediaCodec>
     </Decoders>
 
