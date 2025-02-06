@@ -17,7 +17,7 @@
  */
 -->
 <resources>
-    <!-- disable bluetooth and wifi during satellite -->
-    <string name="def_satellite_mode_radios">bluetooth,wifi</string>
+    <!-- disable bluetooth, nfc and wifi during satellite -->
+    <string name="def_satellite_mode_radios">bluetooth,nfc,wifi</string>
 </resources>
 
