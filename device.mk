@@ -1034,11 +1034,7 @@ PRODUCT_PACKAGES += \
 $(call soong_config_set,aoc_spk_post_processing,prebuilts_dir,$(RELEASE_GOOGLE_SPKPOSTPROCESSING_ZUMAPRO_DIR))
 
 # Audio HAL Server & Default Implementations
-ifeq ($(USE_AUDIO_HAL_AIDL),true)
 include device/google/gs-common/audio/aidl.mk
-else
-include device/google/gs-common/audio/hidl_zuma.mk
-endif
 
 ## AoC soong
 PRODUCT_SOONG_NAMESPACES += \
