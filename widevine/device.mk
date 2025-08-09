@@ -1,1 +1,1 @@
-BOARD_VENDOR_SEPOLICY_DIRS += device/google/zumapro-sepolicy/widevine
+BOARD_VENDOR_SEPOLICY_DIRS += device/google/laguna-sepolicy/widevine
