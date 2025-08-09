@@ -18,15 +18,15 @@ include build/make/target/board/BoardConfigPixelCommon.mk
 
 # Include settings for 16k page size kernel if enabled.
 ifneq ($(wildcard $(TARGET_KERNEL_DIR)/16kb/),)
-include device/google/zumapro/BoardConfig-16k-common.mk
+include device/google/laguna/BoardConfig-16k-common.mk
 endif
 
 # HACK : To fix up after bring up multimedia devices.
-TARGET_SOC := zumapro
+TARGET_SOC := laguna
 
 TARGET_SOC_NAME := google
 
-USES_DEVICE_GOOGLE_ZUMAPRO := true
+USES_DEVICE_GOOGLE_LAGUNA := true
 
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-2a
@@ -47,7 +47,7 @@ ifeq (,$(filter %_fullmte,$(TARGET_PRODUCT)))
 BOARD_KERNEL_CMDLINE += kasan=off
 endif
 
-BOARD_BOOTCONFIG += androidboot.boot_devices=13200000.ufs
+BOARD_BOOTCONFIG += androidboot.boot_devices=3c400000.ufs
 
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
@@ -60,12 +60,12 @@ endif
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
-TARGET_RECOVERY_WIPE := device/google/zumapro/conf/recovery.wipe
+TARGET_RECOVERY_WIPE := device/google/laguna/conf/recovery.wipe
 
 # This is the fstab file that will be included in the recovery image.  Note that
 # recovery doesn't care about the encryption settings, so it doesn't matter
 # whether we use the normal or the fips fstab here.
-TARGET_RECOVERY_FSTAB_GENRULE := gen_fstab.zumapro-sw-encrypt
+TARGET_RECOVERY_FSTAB_GENRULE := gen_fstab.laguna-sw-encrypt
 
 TARGET_RECOVERY_PIXEL_FORMAT := ABGR_8888
 TARGET_RECOVERY_UI_MARGIN_HEIGHT := 165
@@ -106,7 +106,7 @@ endif
 BOARD_EMULATOR_COMMON_MODULES := liblight
 
 OVERRIDE_RS_DRIVER := libRSDriverArm.so
-BOARD_EGL_CFG := device/google/zumapro/conf/egl.cfg
+BOARD_EGL_CFG := device/google/laguna/conf/egl.cfg
 #BOARD_USES_HGL := true
 USE_OPENGL_RENDERER := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
@@ -147,8 +147,8 @@ $(call soong_config_set,vendorgraphicbuffer,gralloc_version,three)
 endif
 
 #display_unit_test
-ifeq ($(USES_DEVICE_GOOGLE_ZUMAPRO),true)
-$(call soong_config_set,display_unit_test,soc,zuma)
+ifeq ($(USES_DEVICE_GOOGLE_LAGUNA),true)
+$(call soong_config_set,display_unit_test,soc,laguna)
 endif
 
 # Graphics
@@ -242,7 +242,7 @@ BOARD_SYSTEM_DLKMIMAGE_FILE_SYSTEM_TYPE := ext4
 TARGET_COPY_OUT_SYSTEM_DLKM := system_dlkm
 
 # Testing related defines
-BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/p24-setup.sh
+BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/p25-setup.sh
 
 #
 # AUDIO & VOICE
@@ -334,7 +334,7 @@ BOARD_USES_METADATA_PARTITION := true
 #BOARD_USES_FIMGAPI_V5X := true
 
 # SECCOMP Policy
-BOARD_SECCOMP_POLICY = device/google/zumapro/seccomp_policy
+BOARD_SECCOMP_POLICY = device/google/laguna/seccomp_policy
 
 #CURL
 BOARD_USES_CURL := true
@@ -429,7 +429,7 @@ BOARD_SYSTEM_KERNEL_MODULES := $(addprefix $(KERNEL_MODULE_DIR)/, $(notdir $(BOA
 # Using BUILD_COPY_HEADERS
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 
-include device/google/zumapro-sepolicy/zumapro-sepolicy.mk
+include device/google/laguna-sepolicy/laguna-sepolicy.mk
 
 # Battery options
 BOARD_KERNEL_CMDLINE += at24.write_timeout=100
