@@ -1020,8 +1020,8 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
 
 PRODUCT_PACKAGES += \
-	android.hardware.health-service.zumapro \
-	android.hardware.health-service.zumapro_recovery \
+	android.hardware.health-service.laguna \
+	android.hardware.health-service.laguna_recovery \
 
 # Audio
 # Audio Vendor Prebuilt
