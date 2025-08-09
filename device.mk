@@ -234,10 +234,7 @@ PRODUCT_PACKAGES += \
 	logging.conf \
 	default.cfg \
 	default.nprf \
-	default_metrics.xml \
-	Pixel_stability.cfg \
-	Pixel_stability.nprf \
-	extensive_logging.conf
+	default_metrics.xml
 
 # Vendor modem extensive logging default property
 PRODUCT_PROPERTY_OVERRIDES += \
