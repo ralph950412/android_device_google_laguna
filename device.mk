@@ -222,8 +222,7 @@ PRODUCT_PACKAGES += modem_ml_svc_sit
 
 # modem ML models configs
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/modem_ml/modem_ml_nnapi_models_user.conf:$(TARGET_COPY_OUT_VENDOR)/etc/modem_ml_models.conf \
-	device/google/zumapro/modem_ml/modem_ml_tflite_models_user.conf:$(TARGET_COPY_OUT_VENDOR)/etc/modem_ml_tflite_models.conf
+	device/google/laguna/modem_ml/modem_ml_nnapi_models_user.conf:$(TARGET_COPY_OUT_VENDOR)/etc/modem_ml_models.conf
 
 # modem logging binary/configs
 PRODUCT_PACKAGES += modem_logging_control
