@@ -23,49 +23,12 @@
 
   <entry>
     <rat>LTE</rat>
-    <band>2</band>
-    <params>
-      <harmonicParams5g>
-        <N>3</N>
-        <overlap>10</overlap>
-      </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
-    </params>
-  </entry>
-
-  <entry>
-    <rat>NR</rat>
-    <band>2</band>
-    <params>
-      <harmonicParams5g>
-        <N>3</N>
-        <overlap>10</overlap>
-      </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
-    </params>
-  </entry>
-
-  <entry>
-    <rat>LTE</rat>
     <band>3</band>
     <params>
       <harmonicParams5g>
         <N>3</N>
         <overlap>10</overlap>
       </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
     </params>
   </entry>
 
@@ -77,11 +40,6 @@
         <N>3</N>
         <overlap>10</overlap>
       </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
     </params>
   </entry>
 
@@ -93,11 +51,6 @@
         <N>3</N>
         <overlap>10</overlap>
       </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
     </params>
   </entry>
 
@@ -128,8 +81,7 @@
     <band>7</band>
     <params>
       <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
+        <wifiVictimMhz>33</wifiVictimMhz>
       </neighborThresholds>
       <intermodParams2g>
         <N>2</N>
@@ -144,8 +96,7 @@
     <band>7</band>
     <params>
       <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
+        <wifiVictimMhz>33</wifiVictimMhz>
       </neighborThresholds>
       <intermodParams2g>
         <N>2</N>
@@ -196,11 +147,6 @@
         <N>3</N>
         <overlap>10</overlap>
       </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
     </params>
   </entry>
 
@@ -212,11 +158,6 @@
         <N>3</N>
         <overlap>10</overlap>
       </harmonicParams5g>
-      <intermodParams5g>
-        <N>-2</N>
-        <M>1</M>
-        <overlap>10</overlap>
-      </intermodParams5g>
     </params>
   </entry>
 
@@ -256,23 +197,45 @@
   <entry>
     <rat>LTE</rat>
     <band>38</band>
-    <params>
-      <harmonicParams5g>
-        <N>3</N>
-        <overlap>10</overlap>
-      </harmonicParams5g>
-    </params>
+    <override>
+      <override2g>
+        <channel>2</channel>
+        <channel>3</channel>
+        <channel>4</channel>
+        <channel>5</channel>
+        <channel>6</channel>
+        <channel>7</channel>
+        <channel>8</channel>
+        <channel>9</channel>
+        <channel>10</channel>
+        <channel>11</channel>
+        <channel>12</channel>
+        <channel>13</channel>
+        <channel>14</channel>
+      </override2g>
+    </override>
   </entry>
 
   <entry>
     <rat>NR</rat>
     <band>38</band>
-    <params>
-      <harmonicParams5g>
-        <N>3</N>
-        <overlap>10</overlap>
-      </harmonicParams5g>
-    </params>
+    <override>
+      <override2g>
+        <channel>2</channel>
+        <channel>3</channel>
+        <channel>4</channel>
+        <channel>5</channel>
+        <channel>6</channel>
+        <channel>7</channel>
+        <channel>8</channel>
+        <channel>9</channel>
+        <channel>10</channel>
+        <channel>11</channel>
+        <channel>12</channel>
+        <channel>13</channel>
+        <channel>14</channel>
+      </override2g>
+    </override>
   </entry>
 
   <entry>
@@ -302,9 +265,12 @@
     <band>40</band>
     <params>
       <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
+        <wifiVictimMhz>102</wifiVictimMhz>
+        <cellVictimMhz>102</cellVictimMhz>
       </neighborThresholds>
+      <defaultChannels>
+        <default2g>11</default2g>
+      </defaultChannels>
     </params>
   </entry>
 
@@ -313,25 +279,35 @@
     <band>40</band>
     <params>
       <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
+        <wifiVictimMhz>102</wifiVictimMhz>
+        <cellVictimMhz>102</cellVictimMhz>
       </neighborThresholds>
+      <defaultChannels>
+        <default2g>11</default2g>
+      </defaultChannels>
     </params>
   </entry>
 
   <entry>
     <rat>LTE</rat>
     <band>41</band>
-    <params>
-      <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
-      </neighborThresholds>
-      <harmonicParams5g>
-        <N>2</N>
-        <overlap>10</overlap>
-      </harmonicParams5g>
-    </params>
+    <override>
+      <override2g>
+        <channel>2</channel>
+        <channel>3</channel>
+        <channel>4</channel>
+        <channel>5</channel>
+        <channel>6</channel>
+        <channel>7</channel>
+        <channel>8</channel>
+        <channel>9</channel>
+        <channel>10</channel>
+        <channel>11</channel>
+        <channel>12</channel>
+        <channel>13</channel>
+        <channel>14</channel>
+      </override2g>
+    </override>
   </entry>
 
   <entry>
@@ -339,13 +315,126 @@
     <band>41</band>
     <params>
       <neighborThresholds>
-        <wifiVictimMhz>50</wifiVictimMhz>
-        <cellVictimMhz>50</cellVictimMhz>
+        <wifiVictimMhz>69</wifiVictimMhz>
+        <cellVictimMhz>108</cellVictimMhz>
       </neighborThresholds>
       <harmonicParams5g>
         <N>2</N>
         <overlap>10</overlap>
       </harmonicParams5g>
+      <defaultChannels>
+        <default2g>1</default2g>
+      </defaultChannels>
     </params>
+  </entry>
+
+  <entry>
+    <rat>LTE</rat>
+    <band>48</band>
+    <override>
+      <override5g>
+        <channel>32</channel>
+        <channel>36</channel>
+        <channel>40</channel>
+        <channel>44</channel>
+        <channel>48</channel>
+        <channel>52</channel>
+        <channel>56</channel>
+        <channel>60</channel>
+        <channel>64</channel>
+        <channel>68</channel>
+        <channel>96</channel>
+        <channel>100</channel>
+        <channel>104</channel>
+        <channel>108</channel>
+        <channel>112</channel>
+        <channel>116</channel>
+        <channel>120</channel>
+        <channel>124</channel>
+        <channel>128</channel>
+        <channel>132</channel>
+        <channel>136</channel>
+        <channel>140</channel>
+        <channel>144</channel>
+        <channel>149</channel>
+        <channel>153</channel>
+        <channel>161</channel>
+        <channel>165</channel>
+        <channel>169</channel>
+        <channel>173</channel>
+        <channel>177</channel>
+      </override5g>
+    </override>
+  </entry>
+
+  <entry>
+    <rat>LTE</rat>
+    <band>66</band>
+    <params>
+      <harmonicParams5g>
+        <N>3</N>
+        <overlap>10</overlap>
+      </harmonicParams5g>
+    </params>
+  </entry>
+
+  <entry>
+    <rat>NR</rat>
+    <band>66</band>
+    <params>
+      <harmonicParams5g>
+        <N>3</N>
+        <overlap>10</overlap>
+      </harmonicParams5g>
+    </params>
+  </entry>
+
+  <entry>
+    <rat>NR</rat>
+    <band>77</band>
+    <params>
+      <neighborThresholds>
+        <cellVictimMhz>1070</cellVictimMhz>
+      </neighborThresholds>
+    </params>
+  </entry>
+
+  <entry>
+    <rat>NR</rat>
+    <band>79</band>
+    <override>
+      <override5g>
+        <channel>32</channel>
+        <channel>36</channel>
+        <channel>40</channel>
+        <channel>44</channel>
+        <channel>48</channel>
+        <channel>52</channel>
+        <channel>56</channel>
+        <channel>60</channel>
+        <channel>64</channel>
+        <channel>68</channel>
+        <channel>96</channel>
+        <channel>100</channel>
+        <channel>104</channel>
+        <channel>108</channel>
+        <channel>112</channel>
+        <channel>116</channel>
+        <channel>120</channel>
+        <channel>124</channel>
+        <channel>128</channel>
+        <channel>132</channel>
+        <channel>136</channel>
+        <channel>140</channel>
+        <channel>144</channel>
+        <channel>149</channel>
+        <channel>153</channel>
+        <channel>161</channel>
+        <channel>165</channel>
+        <channel>169</channel>
+        <channel>173</channel>
+        <channel>177</channel>
+      </override5g>
+    </override>
   </entry>
 </table>
