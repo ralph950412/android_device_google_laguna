@@ -389,35 +389,22 @@ PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
 # Install product specific framework compatibility matrix
 # (TODO: b/169535506) This includes the FCM for system_ext and product partition.
 # It must be split into the FCM of each partition.
-ifeq ($(PRODUCT_SHIPPING_API_LEVEL),35)
 DEVICE_MANIFEST_FILE := \
-	device/google/zumapro/manifest_202404.xml
-DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/zumapro/device_framework_matrix_product_202404.xml
+	device/google/laguna/manifest.xml
+DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/laguna/device_framework_matrix_product.xml
 DEVICE_MATRIX_FILE := \
-	device/google/zumapro/compatibility_matrix_202404.xml
-else
-DEVICE_MANIFEST_FILE := \
-	device/google/zumapro/manifest.xml
-DEVICE_PRODUCT_COMPATIBILITY_MATRIX_FILE += device/google/zumapro/device_framework_matrix_product_8.xml
-DEVICE_MATRIX_FILE := \
-	device/google/zumapro/compatibility_matrix.xml
-endif
+	device/google/laguna/compatibility_matrix.xml
 
 BOARD_USE_CODEC2_AIDL := V1
 ifneq (,$(filter aosp_%,$(TARGET_PRODUCT)))
-ifeq ($(PRODUCT_SHIPPING_API_LEVEL),35)
-DEVICE_MANIFEST_FILE += \
-	device/google/zumapro/manifest_media_aosp_202404.xml
-else
-DEVICE_MANIFEST_FILE += \
-	device/google/zumapro/manifest_media_aosp.xml
-endif
+#DEVICE_MANIFEST_FILE += \
+#	device/google/laguna/manifest_media_aosp.xml
 
 PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml
 else
-DEVICE_MANIFEST_FILE += \
-	device/google/zumapro/manifest_media.xml
+#DEVICE_MANIFEST_FILE += \
+#	device/google/laguna/manifest_media.xml
 
 PRODUCT_COPY_FILES += \
 	device/google/zumapro/media_codecs_bo_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml \
