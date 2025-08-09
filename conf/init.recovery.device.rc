@@ -1,6 +1,6 @@
 on init
-    wait /sys/devices/platform/11210000.usb/11210000.dwc3/driver 10
-    setprop sys.usb.controller "11210000.dwc3"
+    wait /sys/devices/platform/simple_usb_bus/c450000.usb3/c400000.dwc3/driver 10
+    setprop sys.usb.controller "c400000.dwc3"
     setprop sys.usb.configfs 1
 
 on init && property:ro.debuggable=1 && property:ro.boot.mode=recovery

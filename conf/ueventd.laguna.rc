@@ -1,7 +1,6 @@
 /dev/mali0                0666   system     system
 /dev/ion                  0666   system     system
 /dev/ump                  0666   system     graphics
-/dev/exynos-mem           0660   system     graphics
 /dev/video0               0660   system     camera
 /dev/video1               0660   system     camera
 /dev/video2               0660   system     camera
@@ -76,7 +75,7 @@
 
 # jpeg
 /dev/m2m1shot_jpeg	      0660   media      media
-/dev/video12              0666   system     system
+/dev/video12              0660   system     system
 
 # audio
 /dev/seiren                     0660   system     audio
@@ -113,6 +112,8 @@
 /dev/ttyGS0               0660   system      system
 /dev/ttyGS1               0660   system      system
 /dev/ttyGS2               0660   system      system
+/dev/ttyGS3               0660   system      system
+/dev/esim_tracer          0660   system      system
 
 # IPC RIL
 /dev/umts_boot0           0660   radio      system
@@ -123,6 +124,9 @@
 # IPC OEM
 /dev/oem_ipc*             0660   radio      radio
 /dev/oem_test             0660   radio      radio
+
+# MODEM UART
+/dev/ttyS2                0660   radio      radio
 
 # interactive governor parameters
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/timer_rate			0660	system	system
@@ -138,6 +142,12 @@
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/boostpulse_duration		0660	system	system
 /sys/devices/system/cpu/cpu*	cpufreq/interactive/io_is_busy			0660	system	system
 
+# Thermal
+/sys/devices/virtual/thermal/thermal_zone*    trip_point_0_temp                 0660    system system
+/sys/devices/virtual/thermal/thermal_zone*    trip_point_0_hyst                 0660    system system
+/sys/devices/virtual/thermal/cooling_device*  cur_state                         0660    system system
+/sys/class/powercap/gpc*                      constraint_0_power_limit_uw       0660    system system
+
 # Vision (VPU, SCORE)
 /dev/vertex0             0660   media      media
 /dev/vertex1             0660   media      media
@@ -146,11 +156,11 @@
 /dev/aoc                 0660   system     system
 
 # Sensors (USF)
-/dev/acd-com.google.usf               0660   system     system
-/dev/acd-com.google.usf.non_wake_up   0660   system     system
+/dev/acd-com.google.usf              0660   system     system
+/dev/acd-com.google.usf.non_wake_up  0660   system     system
 
 # CHRE
-/dev/acd-com.google.chre  		        0660   system     system
+/dev/acd-com.google.chre              0660   system     system
 /dev/acd-com.google.chre.non_wake_up  0660   system     system
 
 # CHRE (EFW transport)
@@ -159,7 +169,7 @@
 /dev/acd-chre_data_rx   	0440   system   system
 
 # BT
-/dev/acd-com.google.bt  		          0660   system     system
+/dev/acd-com.google.bt  		0660   system     system
 /dev/acd-com.google.bt.non_wake_up  	0660   system     system
 
 # AoC Bluetooth Offload
@@ -178,16 +188,15 @@
 
 # SecureElement
 /dev/st54spi             0660   secure_element secure_element
-/dev/st33spi             0660   secure_element secure_element
 
-#bigwave
-/dev/bigwave             0660   mediacodec mediadrm
+# codec3p
+/dev/vpu                 0660   mediacodec mediadrm
 
 # Trusty
 /dev/trusty-ipc-dev0                                      0660   system     drmrpc
 /dev/trusty-log0                                          0660   system     system
-/dev/block/platform/13200000\.ufs/by-name/trusty_persist  0660   system     system
-/dev/block/platform/13200000\.ufs/by-name/trusty_userdata 0660   system     system
+/dev/block/platform/3c400000\.ufs/by-name/trusty_persist  0660   system     system
+/dev/block/platform/3c400000\.ufs/by-name/trusty_userdata 0660   system     system
 
 # RPMB
 /dev/sg1                 0660   system     system
@@ -201,6 +210,12 @@
 # Storage: for UDFPS calibration data sideload feature
 /dev/block/by-name/mfg_data 0660   system     system
 
+# Storage: for bootlogs feature
+/dev/block/by-name/bl_data  0400   system     system
+
+# IIF
+/dev/iif                    0666   system     system
+
 # TPU
 /dev/edgetpu-soc            0660   system     system
 
@@ -211,7 +226,7 @@
 /dev/dit2                 0660   radio      radio
 
 # Bluetooth
-/dev/ttySAC18             0660   bluetooth   system
+/dev/ttyS1                0660   bluetooth   system
 /dev/btpower              0660   bluetooth   system
 
 # BT Wifi Coexistence
@@ -236,8 +251,7 @@
 /dev/dma_heap/sensor_direct_heap       0444   system     graphics
 /dev/dma_heap/aaudio_playback_heap     0444   system     audio
 /dev/dma_heap/aaudio_capture_heap      0444   system     audio
-/dev/dma_heap/gcma_camera              0444   system     system
-/dev/dma_heap/gcma_camera-uncached     0444   system     system
+/dev/dma_heap/aaudio_offload_heap      0444   system     audio
 
 # Direct Charging
 /dev/logbuffer_pca9468_tcpm            0600   system     system
@@ -248,5 +262,19 @@
 # Wlan
 /dev/wlan                              0660   wifi       wifi
 
+# GPU
+/dev/pvr_sync                          0666   system     graphics
+
+# logbuffer
+/dev/logbuffer_tcpm                    0640   system     system
+/dev/logbuffer_usbpd                   0640   system     system
+
+# usbmon
+subsystem usbmon
+    devname uevent_devpath
+    dirname /dev
+
+/dev/usbmon*                           0660   system     system
+
 # USB Alt Modes
-/sys/devices/platform/108d0000.hsi2c/i2c-*/*-0025/typec/port0/port0-partner/port0-partner.*    mode1/active    0664    system    system
+/sys/devices/platform/53f1000.spmi/spmi-*/*-04/typec/port0/port0-partner/port0-partner.*    mode1/active    0664    system    system

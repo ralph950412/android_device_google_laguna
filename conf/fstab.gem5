@@ -1,0 +1,11 @@
+# Android fstab file.
+#<src>                         <mnt_point>   <type>  <mnt_flags and options>  <fs_mgr_flags>
+/dev/block/by-name/system      /system       ext4    noatime,ro,barrier=1     wait,first_stage_mount,slotselect
+/dev/block/by-name/system_ext  /system_ext   ext4    noatime,ro               wait,first_stage_mount
+/dev/block/by-name/system_dlkm /system_dlkm  ext4    noatime,ro               wait,first_stage_mount
+/dev/block/by-name/vendor      /vendor       ext4    noatime,ro               wait,first_stage_mount
+/dev/block/by-name/vendor_dlkm /vendor_dlkm  ext4    noatime,ro               wait,first_stage_mount
+/dev/block/by-name/product     /product      ext4    noatime,ro               wait,first_stage_mount
+# Android fstab file.
+#<src>                         <mnt_point>   <type>  <mnt_flags and options>  <fs_mgr_flags>
+/dev/block/by-name/userdata    /data         f2fs    noatime,sync             wait,first_stage_mount

@@ -441,52 +441,46 @@ PRODUCT_ENFORCE_PRODUCT_PARTITION_INTERFACE := true
 # Init files
 PRODUCT_COPY_FILES += \
 	$(LOCAL_KERNEL):kernel \
-	device/google/zumapro/conf/init.zumapro.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.usb.rc \
-	device/google/zumapro/conf/ueventd.zumapro.rc:$(TARGET_COPY_OUT_VENDOR)/etc/ueventd.rc
+	device/google/laguna/conf/init.laguna.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.laguna.usb.rc \
+	device/google/laguna/conf/ueventd.laguna.rc:$(TARGET_COPY_OUT_VENDOR)/etc/ueventd.rc
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/init.zumapro.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.soc.rc \
-	device/google/zumapro/conf/init.zuma.soc.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zuma.soc.rc \
-	device/google/zumapro/conf/init.zumapro.board.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.zumapro.board.rc \
-	device/google/zumapro/conf/init.persist.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.persist.rc
+	device/google/laguna/conf/init.laguna.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.laguna.rc \
+	device/google/laguna/conf/init.persist.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.persist.rc
 
 ifeq (true,$(filter $(TARGET_BOOTS_16K) $(PRODUCT_16K_DEVELOPER_OPTION),true))
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/init.efs.16k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc \
-	device/google/zumapro/conf/fstab.efs.from_data:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.efs.from_data
+	device/google/laguna/conf/init.efs.16k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
 
 PRODUCT_PACKAGES += fsck.f2fs.vendor
 else
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/init.efs.4k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
+	device/google/laguna/conf/init.efs.4k.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.efs.rc
 endif
 
 # Recovery files
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.zumapro.rc \
-	device/google/zumapro/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.zuma.rc
+	device/google/laguna/conf/init.recovery.device.rc:$(TARGET_COPY_OUT_RECOVERY)/root/init.recovery.laguna.rc
 
 # Fstab files
 ifeq (true,$(TARGET_BOOTS_16K))
 PRODUCT_SOONG_NAMESPACES += \
-        device/google/zumapro/conf/fs-16kb
+        device/google/laguna/conf/fs-16kb
 else ifeq (ext4,$(TARGET_RW_FILE_SYSTEM_TYPE))
 PRODUCT_SOONG_NAMESPACES += \
-        device/google/zumapro/conf/ext4
+        device/google/laguna/conf/ext4
 else
 PRODUCT_SOONG_NAMESPACES += \
-        device/google/zumapro/conf/f2fs
+        device/google/laguna/conf/f2fs
 endif
 
 PRODUCT_PACKAGES += \
-	fstab.zuma \
-	fstab.zumapro \
-	fstab.zuma.vendor_ramdisk \
-	fstab.zumapro.vendor_ramdisk \
-	fstab.zuma-fips \
-	fstab.zumapro-fips \
-	fstab.zuma-fips.vendor_ramdisk \
-	fstab.zumapro-fips.vendor_ramdisk
+	fstab.gem5 \
+	fstab.gem5.vendor_ramdisk \
+	fstab.laguna \
+	fstab.laguna.vendor_ramdisk \
+	fstab.laguna-fips \
+	fstab.laguna-fips.vendor_ramdisk
 
 PRODUCT_COPY_FILES += \
 	device/google/$(TARGET_BOARD_PLATFORM)/conf/fstab.rw.persist:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.persist \
@@ -963,7 +957,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	ro.postinstall.fstab.prefix=/product
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/conf/fstab.ro.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
+	device/google/laguna/conf/fstab.ro.postinstall:$(TARGET_COPY_OUT_PRODUCT)/etc/fstab.postinstall
 
 # fastbootd
 PRODUCT_PACKAGES += \

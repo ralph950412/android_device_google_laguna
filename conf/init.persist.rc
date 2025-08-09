@@ -14,7 +14,8 @@ on property:ro.vendor.persist.status=mounted
     # for battery defender
     mkdir /mnt/vendor/persist/battery 0700 system system
 
-    # Camera factory calibration files
+    # Factory calibration files
+    mkdir /mnt/vendor/persist/camera 0700 system system
     chmod 0771 /mnt/vendor/persist/camera
     chmod 0771 /mnt/vendor/persist/camera/OTP_calibration
     chmod 0771 /mnt/vendor/persist/camera/pdaf_calibration_data
@@ -29,6 +30,7 @@ on property:ro.vendor.persist.status=mounted
     restorecon_recursive /mnt/vendor/persist/camera
     restorecon_recursive /mnt/vendor/persist/modem
     # Set up display-related directories and permissions
+    mkdir /mnt/vendor/persist/display 0751 system system
     # Add restorecon_recursive command to make sure the restorecon label is persist_display_file.
     restorecon_recursive /mnt/vendor/persist/display
     mkdir /mnt/vendor/persist/data/sfs 0700 system system
@@ -44,7 +46,7 @@ on property:ro.fstype.data=* && property:ro.vendor.persist.status=mounted
     symlink /mnt/vendor/persist/ss /data/vendor/ss/persist
     chown root system /data/vendor/ss/persist
     chmod 0770 /data/vendor/ss/persist
-    symlink /dev/block/platform/13200000\.ufs/by-name/trusty_persist /data/vendor/ss/persist/0
+    symlink /dev/block/platform/3c400000\.ufs/by-name/trusty_persist /data/vendor/ss/persist/0
     chown system system /data/vendor/ss/0
     chown system system /data/vendor/ss/persist/0
     chown system system /data/vendor/ss/persist/nsp
