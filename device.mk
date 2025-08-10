@@ -47,9 +47,9 @@ include device/google/gs-common/fingerprint/fingerprint.mk
 include device/google/gs-common/nfc/nfc.mk
 include device/google/gs-common/16kb/16kb.mk
 
-include device/google/zumapro/dumpstate/item.mk
+include device/google/laguna/dumpstate/item.mk
 
-TARGET_BOARD_PLATFORM := zumapro
+TARGET_BOARD_PLATFORM := laguna
 ALLOW_MISSING_DEPENDENCIES := true
 
 AB_OTA_POSTINSTALL_CONFIG += \
@@ -79,9 +79,9 @@ PRODUCT_SOONG_NAMESPACES += \
 	hardware/google/graphics/zumapro/libhwc2.1 \
 	hardware/google/interfaces \
 	hardware/google/pixel \
-	device/google/zumapro \
+	device/google/laguna \
 	vendor/google_devices/common/chre/host/hal \
-	vendor/google_devices/zumapro/proprietary/debugpolicy \
+	vendor/google_devices/laguna/proprietary/debugpolicy \
 	vendor/google/whitechapel/tools \
 	vendor/google/interfaces \
 	vendor/google_nos/host/android \
@@ -265,7 +265,7 @@ USE_GOOGLE_CARRIER_SETTINGS := true
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.uses_google_dialer_carrier_settings=1
 # GoogleDialer in PDK build with "USES_GOOGLE_DIALER_CARRIER_SETTINGS=true"
-PRODUCT_SOONG_NAMESPACES += vendor/google_devices/zumapro/proprietary/GoogleDialer
+PRODUCT_SOONG_NAMESPACES += vendor/google_devices/laguna/proprietary/GoogleDialer
 
 # Use prebuilt PixelImsMediaFramework.jar for PDK build
 PRODUCT_SOONG_NAMESPACES += vendor/google_devices/gs-common/prebuilts/ImsMedia
@@ -295,7 +295,7 @@ endif
 # "vendor/arm" doesn't exist in PDK build
 ifeq (,$(realpath $(TOPDIR)vendor/arm/mali/valhall/Android.bp))
 PRODUCT_SOONG_NAMESPACES += \
-	vendor/google_devices/zumapro/prebuilts/gpu
+	vendor/google_devices/laguna/prebuilts/gpu
 else
 PRODUCT_SOONG_NAMESPACES += \
 	vendor/arm/mali/valhall
@@ -310,8 +310,9 @@ include device/google/gs-common/gpu/gpu.mk
 
 PRODUCT_PACKAGES += \
 	csffw_image_prebuilt__firmware_prebuilt_ttux_mali_csffw.bin \
-	libGLES_mali \
-	vulkan.mali \
+	libGLESv1_CM_powervr \
+	libGLESv2_powervr \
+	vulkan.powervr \
 	libgpudataproducer
 
 # Install the OpenCL ICD Loader
@@ -336,9 +337,12 @@ PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl=angle \
 	ro.hardware.vulkan=pastel
 else
+PRODUCT_PACKAGES += \
+	libEGL_powervr
+
 PRODUCT_VENDOR_PROPERTIES += \
-	ro.hardware.egl=mali \
-	ro.hardware.vulkan=mali
+	ro.hardware.egl=powervr \
+	ro.hardware.vulkan=powervr
 endif
 
 # SurfaceFlinger / RenderEngine
@@ -401,17 +405,17 @@ ifneq (,$(filter aosp_%,$(TARGET_PRODUCT)))
 #	device/google/laguna/manifest_media_aosp.xml
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml
+	device/google/laguna/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml
 else
 #DEVICE_MANIFEST_FILE += \
 #	device/google/laguna/manifest_media.xml
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/media_codecs_bo_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml \
-	device/google/zumapro/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_aosp_c2.xml
+	device/google/laguna/media_codecs_bo_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml \
+	device/google/laguna/media_codecs_aosp_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_aosp_c2.xml
 endif
 
-DEVICE_PACKAGE_OVERLAYS += device/google/zumapro/overlay
+DEVICE_PACKAGE_OVERLAYS += device/google/laguna/overlay
 
 # RKP VINTF
 -include vendor/google_nos/host/android/hals/keymaster/aidl/strongbox/RemotelyProvisionedComponent-citadel.mk
@@ -532,7 +536,7 @@ PRODUCT_PACKAGES += \
 
 # Touch firmware
 #PRODUCT_COPY_FILES += \
-	device/google/zumapro/firmware/touch/s6sy761.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/s6sy761.fw
+	device/google/laguna/firmware/touch/s6sy761.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/s6sy761.fw
 # Touch
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
@@ -584,7 +588,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
         vendor.powerhal.adpf.rate=16666666
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
+	device/google/laguna/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
 
 -include hardware/google/pixel/power-libperfmgr/aidl/device.mk
 
@@ -613,11 +617,11 @@ PRODUCT_PROPERTY_OVERRIDES += audio.spatializer.effect.util_clamp_min=300
 
 # Calliope firmware overwrite
 #PRODUCT_COPY_FILES += \
-	device/google/zumapro/firmware/calliope_dram.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_dram.bin \
-	device/google/zumapro/firmware/calliope_sram.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_sram.bin \
-	device/google/zumapro/firmware/calliope_dram_2.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_dram_2.bin \
-	device/google/zumapro/firmware/calliope_sram_2.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_sram_2.bin \
-	device/google/zumapro/firmware/calliope2.dt:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope2.dt \
+	device/google/laguna/firmware/calliope_dram.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_dram.bin \
+	device/google/laguna/firmware/calliope_sram.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_sram.bin \
+	device/google/laguna/firmware/calliope_dram_2.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_dram_2.bin \
+	device/google/laguna/firmware/calliope_sram_2.bin:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope_sram_2.bin \
+	device/google/laguna/firmware/calliope2.dt:$(TARGET_COPY_OUT_VENDOR)/firmware/calliope2.dt \
 
 # Cannot reference variables defined in BoardConfig.mk, uncomment this if
 # BOARD_USE_OFFLOAD_AUDIO and BOARD_USE_OFFLOAD_EFFECT are true
@@ -650,7 +654,7 @@ PRODUCT_PACKAGES += \
 	VideoEditorGoogle
 
 # WideVine modules
-include device/google/zumapro/widevine/device.mk
+include device/google/laguna/widevine/device.mk
 PRODUCT_PACKAGES += \
 	liboemcrypto \
 
@@ -658,13 +662,13 @@ RIPCURRENTPRO_PRODUCT := %ripcurrentpro
 ifneq (,$(filter $(RIPCURRENTPRO_PRODUCT), $(TARGET_PRODUCT)))
         LOCAL_TARGET_PRODUCT := ripcurrentpro
 else
-        # WAR: continue defaulting to slider build on zumapro
+        # WAR: continue defaulting to slider build on laguna
         LOCAL_TARGET_PRODUCT := slider
 endif
 
 include device/google/gs-common/camera/lyric.mk
 
-$(call soong_config_set,lyric,soc,zumapro)
+$(call soong_config_set,lyric,soc,laguna)
 # lyric::tuning_product is set in device-specific makefiles,
 # such as device/google/${DEVICE}/device-${DEVICE}.mk
 
@@ -703,10 +707,10 @@ endif
 
 # Copy Camera HFD Setfiles
 #PRODUCT_COPY_FILES += \
-	device/google/zumapro/firmware/camera/libhfd/default_configuration.hfd.cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/default_configuration.hfd.cfg.json \
-	device/google/zumapro/firmware/camera/libhfd/pp_cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/pp_cfg.json \
-	device/google/zumapro/firmware/camera/libhfd/tracker_cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/tracker_cfg.json \
-	device/google/zumapro/firmware/camera/libhfd/WithLightFixNoBN.SDNNmodel:$(TARGET_COPY_OUT_VENDOR)/firmware/WithLightFixNoBN.SDNNmodel
+	device/google/laguna/firmware/camera/libhfd/default_configuration.hfd.cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/default_configuration.hfd.cfg.json \
+	device/google/laguna/firmware/camera/libhfd/pp_cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/pp_cfg.json \
+	device/google/laguna/firmware/camera/libhfd/tracker_cfg.json:$(TARGET_COPY_OUT_VENDOR)/firmware/tracker_cfg.json \
+	device/google/laguna/firmware/camera/libhfd/WithLightFixNoBN.SDNNmodel:$(TARGET_COPY_OUT_VENDOR)/firmware/WithLightFixNoBN.SDNNmodel
 
 # WiFi
 PRODUCT_COPY_FILES += \
@@ -844,7 +848,7 @@ include device/google/gs-common/mediacodec/bigwave/mediacodec_bigwave.mk
 $(call soong_config_set,bigw,soc,zuma)
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
+	device/google/laguna/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
 
 PRODUCT_PROPERTY_OVERRIDES += \
        debug.c2.use_dmabufheaps=1 \
@@ -868,8 +872,8 @@ PRODUCT_PROPERTY_OVERRIDES += media.c2.hal.selection=aidl
 
 # 2. OpenMAX IL
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
-	device/google/zumapro/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml
+	device/google/laguna/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
+	device/google/laguna/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml
 ####################################
 
 # Telephony
@@ -985,11 +989,11 @@ USE_EARLY_SEND_DEVICE_INFO := true
 USE_NEW_RADIO_ACCESS_SPECIFIER_FORMAT := true
 
 #$(call inherit-product, vendor/google_devices/telephony/common/device-vendor.mk)
-#$(call inherit-product, vendor/google_devices/zumapro/proprietary/device-vendor.mk)
+#$(call inherit-product, vendor/google_devices/laguna/proprietary/device-vendor.mk)
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
 #$(call inherit-product, hardware/google_devices/exynos5/exynos5.mk)
-#$(call inherit-product-if-exists, hardware/google_devices/zumapro/zumapro.mk)
+#$(call inherit-product-if-exists, hardware/google_devices/laguna/laguna.mk)
 #$(call inherit-product-if-exists, vendor/google_devices/common/exynos-vendor.mk)
 #$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4375/device-bcm.mk)
 include device/google/gs-common/sensors/sensors.mk
@@ -997,8 +1001,8 @@ include device/google/gs-common/sensors/sensors.mk
 $(call soong_config_set,usf,target_soc,zuma)
 
 PRODUCT_COPY_FILES += \
-	device/google/zumapro/default-permissions.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/default-permissions/default-permissions.xml \
-	device/google/zumapro/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml \
+	device/google/laguna/default-permissions.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/default-permissions/default-permissions.xml \
+	device/google/laguna/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml \
 	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
 
 PRODUCT_PACKAGES += \
@@ -1007,7 +1011,7 @@ PRODUCT_PACKAGES += \
 
 # Audio
 # Audio Vendor Prebuilt
-$(call soong_config_set,aoc_spk_post_processing,prebuilts_dir,$(RELEASE_GOOGLE_SPKPOSTPROCESSING_ZUMAPRO_DIR))
+$(call soong_config_set,aoc_spk_post_processing,prebuilts_dir,$(RELEASE_GOOGLE_SPKPOSTPROCESSING_LAGUNA_DIR))
 
 # Audio HAL Server & Default Implementations
 include device/google/gs-common/audio/aidl.mk
@@ -1016,7 +1020,7 @@ include device/google/gs-common/audio/aidl.mk
 PRODUCT_SOONG_NAMESPACES += \
         vendor/google/whitechapel/aoc
 
-$(call soong_config_set,aoc,target_soc,zumapro)
+$(call soong_config_set,aoc,target_soc,laguna)
 $(call soong_config_set,aoc,target_product,$(TARGET_PRODUCT))
 
 #
@@ -1063,14 +1067,14 @@ include device/google/gs-common/edgetpu/edgetpu.mk
 $(call soong_config_set,edgetpu_config,chip,rio_pro)
 # Include the edgetpu targets defined the namespaces below into the final image.
 PRODUCT_SOONG_NAMESPACES += \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/metrics \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/tflite_delegate \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/darwinn_logging_service \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/nnapi_stable_aidl \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/aidl \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/hal \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/tachyon/tachyon_apis \
-	vendor/google_devices/zumapro/proprietary/gchips/tpu/tachyon/service
+	vendor/google_devices/laguna/proprietary/gchips/tpu/metrics \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/tflite_delegate \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/darwinn_logging_service \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/nnapi_stable_aidl \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/aidl \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/hal \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/tachyon/tachyon_apis \
+	vendor/google_devices/laguna/proprietary/gchips/tpu/tachyon/service
 # TPU firmware
 PRODUCT_PACKAGES += edgetpu-rio.fw
 

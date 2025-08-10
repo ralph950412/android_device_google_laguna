@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include device/google/zumapro/device-common.mk
+include device/google/laguna/device-common.mk

@@ -15,9 +15,9 @@
 #
 
 ifneq ($(BOARD_WITHOUT_RADIO), true)
--include vendor/google_devices/zumapro/proprietary/telephony/device-vendor.mk
+-include vendor/google_devices/laguna/proprietary/telephony/device-vendor.mk
 endif
-include device/google/zumapro/device.mk
+include device/google/laguna/device.mk
 
 # Telephony
 PRODUCT_COPY_FILES += \
@@ -29,7 +29,7 @@ PRODUCT_COPY_FILES += \
 
 # Set system properties identifying the chipset
 PRODUCT_VENDOR_PROPERTIES += ro.soc.manufacturer=Google
-TARGET_VENDOR_PROP += device/google/zumapro/vendor.prop
+TARGET_VENDOR_PROP += device/google/laguna/vendor.prop
 
 PRODUCT_PRODUCT_PROPERTIES += \
     persist.vendor.testing_battery_profile=2
