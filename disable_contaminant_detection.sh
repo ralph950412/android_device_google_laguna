@@ -1,6 +1,6 @@
 #!/vendor/bin/sh
 
-for f in /sys/devices/platform/108d0000.hsi2c/i2c-*/*-0025; do
+for f in /sys/devices/platform/53f1000.spmi/spmi-*/*-04; do
   if [ -d $f ]; then
     echo 0 > $f/contaminant_detection;
   fi
