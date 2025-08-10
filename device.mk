@@ -118,6 +118,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.ril.log.chunk_size=5242880 \
 	persist.vendor.ril.log.num_file=3
 
+# Missing prop 1
+PRODUCT_PRODUCT_PROPERTIES += \
+	persist.fsck.disable_linear_lookup=on
+
 # Enable reboot free DSDS
 PRODUCT_PRODUCT_PROPERTIES += \
 	persist.radio.reboot_on_modem_change=false
@@ -133,6 +137,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 # Enable SET_SCREEN_STATE request
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.ril.enable_set_screen_state=1
+
+# Missing prop 2
+PRODUCT_PRODUCT_PROPERTIES += \
+	persist.vendor.intelligence=on
 
 # Set the Bluetooth Class of Device
 # Service Field: 0x5A -> 90
@@ -172,6 +180,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 # Override default HCI command timeout value for BT stack
 PRODUCT_PRODUCT_PROPERTIES += \
     bluetooth.hci.timeout_milliseconds=5000
+
+# Missing prop 3 (duplicate of #1 for some reason)
+#PRODUCT_PRODUCT_PROPERTIES += \
+#	persist.fsck.disable_linear_lookup=on
 
 # Carrier configuration default location
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -919,6 +931,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 	persist.bluetooth.bqr.event_mask?=30 \
 	persist.bluetooth.bqr.min_interval_ms=500
 
+# Missing prop 4
+PRODUCT_PRODUCT_PROPERTIES += \
+	bluetooth.core.le.rpa_offload=true
+
 #VNDK
 PRODUCT_PACKAGES += \
 	vndk-libs
@@ -1169,6 +1185,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # since it can't be overridden from /vendor.
 PRODUCT_PRODUCT_PROPERTIES += \
 	dumpstate.strict_run=false
+
+# Missing prop 5
+PRODUCT_PRODUCT_PROPERTIES += \
+	remote_provisioning.tee.rkp_only=1 \
+	remote_provisioning.strongbox.rkp_only=1
 
 PRODUCT_NO_BIONIC_PAGE_SIZE_MACRO := true
 PRODUCT_CHECK_PREBUILT_MAX_PAGE_SIZE := true
